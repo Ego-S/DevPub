@@ -23,4 +23,7 @@
 hs_err_pid*
 
 src/main/resources/*
-
+application.yml
+.idea
+DevPub.iml
+target
