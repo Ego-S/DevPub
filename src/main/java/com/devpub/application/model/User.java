@@ -37,6 +37,6 @@ public class User {
 
 	private String code;
 
-	@Column(name = "photo")
+	@Column(name = "photo", columnDefinition = "TEXT")
 	private String photoPath;
 }
