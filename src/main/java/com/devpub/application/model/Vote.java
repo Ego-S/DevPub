@@ -22,11 +22,11 @@ public class Vote {
 	private int id;
 
 	@ManyToOne(cascade = CascadeType.ALL)
-	@Column(name = "user_id", nullable = false)
+	@JoinColumn(name = "user_id", nullable = false)
 	private User userId;
 
 	@ManyToOne(cascade = CascadeType.ALL)
-	@Column(name = "post_id", nullable = false)
+	@JoinColumn(name = "post_id", nullable = false)
 	private Post postId;
 
 	@Column(nullable = false)
