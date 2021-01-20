@@ -29,11 +29,13 @@ public class Post {
 	@Column(name = "moderation_status", nullable = false)
 	private ModerationStatus moderationStatus;
 
-	@Column(name = "moderator_id")
-	private int moderatorId;
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "moderator_id")
+	private User moderatorId;
 
-	@Column(name = "user_id", nullable = false)
-	private int userId;
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User userId;
 
 	@Column(name = "time", nullable = false)
 	private LocalDateTime postTime;

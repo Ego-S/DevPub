@@ -21,11 +21,13 @@ public class Vote {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
-	@Column(name = "user_id", nullable = false)
-	private int userId;
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User userId;
 
-	@Column(name = "post_id", nullable = false)
-	private int postId;
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "post_id", nullable = false)
+	private Post postId;
 
 	@Column(nullable = false)
 	private LocalDateTime time;
