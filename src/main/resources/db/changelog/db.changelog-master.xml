@@ -13,7 +13,7 @@
         <tagDatabase tag="db-init"/>
     </changeSet>
 
-    <include file="db/changelog/liquibase-db-create-schemas.xml"/>
+    <include file="db/changelog/v1.0/liquibase-db-create-schemas.xml"/>
     <include file="db/changelog/v1.0/changelog.blog-global-settings-table-fill.xml"/>
 
     <changeSet id="20" author="Ego-S">

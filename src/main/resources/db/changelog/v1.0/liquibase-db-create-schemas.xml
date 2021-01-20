@@ -9,6 +9,10 @@
                    http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd
                    http://www.liquibase.org/xml/ns/dbchangelog
                    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet author="Ego-S" id="1610735896800-0">
+        <sql>ALTER SCHEMA `pubdev` DEFAULT CHARACTER SET utf8;
+        </sql>
+    </changeSet>
     <changeSet author="Ego-S" id="1610735896800-1">
         <createTable tableName="captcha_codes">
             <column autoIncrement="true" name="id" type="INT">
@@ -171,9 +175,5 @@
     </changeSet>
     <changeSet author="Ego-S" id="1610735896800-12">
         <addForeignKeyConstraint baseColumnNames="post_id" baseTableName="tag2post" constraintName="FKpjoedhh4h917xf25el3odq20i" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="posts" validate="true"/>
-    </changeSet>
-    <changeSet author="Ego-S" id="1610735896800-13">
-        <sql>ALTER SCHEMA `pubdev` DEFAULT CHARACTER SET utf8;
-        </sql>
     </changeSet>
 </databaseChangeLog>
