@@ -31,11 +31,11 @@ public class Post {
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "moderator_id")
-	private User moderatorId;
+	private User moderator;
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "user_id", nullable = false)
-	private User userId;
+	private User user;
 
 	@Column(name = "time", nullable = false)
 	private LocalDateTime postTime;
@@ -48,5 +48,4 @@ public class Post {
 
 	@Column(name = "view_count", nullable = false)
 	private int viewCount;
-
 }

@@ -16,13 +16,13 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 	Page<Post> findAllAcceptedPostsBefore(LocalDateTime timeBefore, Pageable pageable);
 
 	@Query(value = "SELECT * FROM posts WHERE is_active=true AND moderation_status='ACCEPTED' AND time <= ?1 " +
-			"ORDER BY (SELECT COUNT(*) FROM post_comments WHERE post_comments.post_id=posts.id)",
+			"ORDER BY (SELECT COUNT(*) FROM post_comments WHERE post_comments.post_id=posts.id) DESC",
 			countQuery = "SELECT * FROM posts WHERE is_active=true AND moderation_status='ACCEPTED' AND time <= ?1",
 			nativeQuery = true)
 	Page<Post> findAllPopularAcceptedPostsBefore (LocalDateTime timeBefore, Pageable pageable);
 
 	@Query(value = "SELECT * FROM posts WHERE is_active=true AND moderation_status='ACCEPTED' AND time <=?1 " +
-			"ORDER BY (SELECT COUNT(*) FROM post_votes WHERE post_id=posts.id AND value=1)",
+			"ORDER BY (SELECT COUNT(*) FROM post_votes WHERE post_id=posts.id AND value=1) DESC",
 			countQuery = "SELECT * FROM posts WHERE is_active=true AND moderation_status='ACCEPTED' AND time <= ?1",
 			nativeQuery = true)
 	Page<Post> findAllBestAcceptedPostsBefore (LocalDateTime timeBefore, Pageable pageable);
