@@ -33,7 +33,17 @@ VALUES
 (1, 'ACCEPTED', '2021-01-28 12:30:00', 'Test text of the post number 2', 'Test post 2', 2, 22),
 (1, 'NEW', '2021-01-28 12:30:00', 'Test text of the post number 3', 'Test post 3', 1, 10),
 (0, 'DECLINED', '2021-01-28 12:30:00', 'Test text of the post number 4', 'Test post 4', 2, 8),
-(1, 'ACCEPTED', '2022-01-28 12:30:00', 'Test text of the post number 5', 'Test post 5', 1, 0)
+(1, 'ACCEPTED', '2022-01-28 12:30:00', 'Test text of the post number 5', 'Test post 5', 1, 0),
+(1, 'ACCEPTED', '2021-01-28 12:30:00', 'Test text of the post number 1', 'Test post 1', 1, 12),
+(1, 'ACCEPTED', '2021-01-28 12:30:00', 'Test text of the post number 2', 'Test post 2', 2, 22),
+(1, 'NEW', '2021-01-28 12:30:00', 'Test text of the post number 3', 'Test post 3', 1, 10),
+(0, 'DECLINED', '2021-01-28 12:30:00', 'Test text of the post number 4', 'Test post 4', 2, 8),
+(1, 'ACCEPTED', '2022-01-28 12:30:00', 'Test text of the post number 5', 'Test post 5', 1, 0),
+(1, 'ACCEPTED', '2021-01-22 12:30:00', 'Test Text <HTML> long text. Test Text <HTML> long text. Test Text <HTML> long text. Test Text <HTML> long text. 1000000000000000000', 'Test post 1', 1, 12),
+(1, 'ACCEPTED', '2021-01-28 12:30:00', 'Test Text <HTML> long text. Test Text <HTML> long text. Test Text <HTML> long text. Test Text <HTML> long text. 1000000000000000000', 'Test post 2', 2, 22),
+(1, 'NEW', '2021-01-28 12:30:00', 'Test Text <HTML> long text. Test Text <HTML> long text. Test Text <HTML> long text. Test Text <HTML> long text. 1000000000000000000', 'Test post 3', 1, 10),
+(0, 'DECLINED', '2021-01-28 12:30:00', 'Test Text <HTML> long text. Test Text <HTML> long text. Test Text <HTML> long text. Test Text <HTML> long text. 1000000000000000000', 'Test post 4', 2, 8),
+(1, 'ACCEPTED', '2022-01-28 12:30:00', 'Test Text <HTML> long text. Test Text <HTML> long text. Test Text <HTML> long text. Test Text <HTML> long text. 1000000000000000000', 'Test post 5', 1, 0)
 GO
 
 

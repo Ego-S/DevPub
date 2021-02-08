@@ -15,3 +15,6 @@ email: mail@google.com
 copyright: Ego-S
 copyrightFrom: 2019
 
+#length of announce in the post preview
+announceLength: 100
+

@@ -8,6 +8,7 @@ import com.devpub.application.model.User;
 import com.devpub.application.repository.PostRepository;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +24,10 @@ import java.util.List;
 public class PostService {
 
 	private final PostRepository postRepository;
+
+	@Value("${announceLength}")
+	private int announceLength;
+
 
 	@Autowired
 	public PostService (PostRepository postRepository) {
@@ -51,11 +56,12 @@ public class PostService {
 				break;
 		}
 
-		PostPageDTO posts = postListToPostDTOList(page.getContent());
+		int count = (int) page.getTotalElements();
+		PostPageDTO posts = postListToPostDTOList(count, page.getContent());
 		return posts;
 	}
 
-	private PostPageDTO postListToPostDTOList(List<Post> postList) {
+	private PostPageDTO postListToPostDTOList(int count, List<Post> postList) {
 		PostPageDTO postPageDTO = new PostPageDTO();
 		List<PostDTO> postDTOList = new ArrayList<>();
 		postList.forEach(post -> {
@@ -64,19 +70,26 @@ public class PostService {
 			postDTO.setTimestamp(Timestamp.valueOf(post.getPostTime()).getTime()/1000);
 			postDTO.setUser(userToUserForPostDTO(post.getUser()));
 			postDTO.setTitle(post.getTitle());
-			postDTO.setAnnounce(post.getText());
+			postDTO.setAnnounce(getAnnounceFromText(post.getText()));
 			postDTO.setLikeCount(postRepository.likesCountOnPost(post));
 			postDTO.setDislikeCount(postRepository.dislikesCountOnPost(post));
 			postDTO.setCommentCount(postRepository.commentCountByPost(post.getId()));
 			postDTO.setViewCount(post.getViewCount());
 			postDTOList.add(postDTO);
 		});
-		postPageDTO.setCount(postDTOList.size());
+		postPageDTO.setCount(count);
 		postPageDTO.setPosts(postDTOList);
+		System.out.println("count of elements in postPageDTO - " + postPageDTO.getCount());
 		return postPageDTO;
 	}
 
 	private UserForPostDTO userToUserForPostDTO(User user) {
 		return new UserForPostDTO(user.getId(), user.getName());
+	}
+
+
+	private String getAnnounceFromText(String text) {
+		String clearText = text.replaceAll("(<\\S+>)", "");
+		return clearText.substring(0, Math.min(clearText.length(), announceLength));
 	}
 }

@@ -9,4 +9,25 @@ public class DefaultController {
 	public String index() {
 		return "index";
 	}
+
+	@RequestMapping("posts/recent")
+	public String recent() {
+		return "index";
+	}
+
+	@RequestMapping("posts/popular")
+	public String popular() {
+		return "index";
+	}
+
+	@RequestMapping("posts/best")
+	public String best() {
+		return "index";
+	}
+
+	@RequestMapping("posts/early")
+	public String early() {
+		return "index";
+	}
+	
 }

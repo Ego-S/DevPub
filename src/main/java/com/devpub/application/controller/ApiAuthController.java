@@ -1,5 +1,6 @@
 package com.devpub.application.controller;
 
+import com.devpub.application.dto.UserAuthDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,8 +14,7 @@ public class ApiAuthController {
 	//TODO
 	//ЗАГЛУШКА
 	@GetMapping("/check")
-	public ResponseEntity<String> check() {
-		String body = "{\"result\": false}";
-		return new ResponseEntity<>(body, HttpStatus.OK);
+	public ResponseEntity<UserAuthDTO> check() {
+		return new ResponseEntity<>(new UserAuthDTO(false), HttpStatus.OK);
 	}
 }
