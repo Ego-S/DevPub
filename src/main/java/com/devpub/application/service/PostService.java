@@ -79,7 +79,6 @@ public class PostService {
 		});
 		postPageDTO.setCount(count);
 		postPageDTO.setPosts(postDTOList);
-		System.out.println("count of elements in postPageDTO - " + postPageDTO.getCount());
 		return postPageDTO;
 	}
 
