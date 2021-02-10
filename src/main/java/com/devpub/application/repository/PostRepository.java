@@ -44,4 +44,17 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
 	@Query("SELECT COUNT(c) FROM Comment c WHERE postId=?1")
 	int commentCountByPost(int postId);
+
+	@Query(value = "SELECT p FROM Post p WHERE isActive=true AND moderationStatus='ACCEPTED' AND postTime <= ?1 AND (title LIKE ?2 OR text LIKE ?2)",
+			countQuery = "SELECT COUNT(p) FROM Post p WHERE isActive=true AND moderationStatus='ACCEPTED' AND postTime <= ?1 AND (title LIKE ?2 OR text LIKE ?2)")
+	Page<Post> search(LocalDateTime timeBefore ,String query, Pageable pageable);
+
+
+	@Query(value = "SELECT p FROM Post p WHERE isActive=true AND moderationStatus='ACCEPTED' AND postTime <= ?1 AND postTime BETWEEN ?2 AND ?3",
+		  countQuery = "SELECT COUNT(p) FROM Post p WHERE isActive=true AND moderationStatus='ACCEPTED' AND postTime <= ?1 AND postTime BETWEEN ?2 AND ?3")
+	Page<Post> findAllByDate(LocalDateTime now, LocalDateTime from, LocalDateTime to, Pageable pageable);
+
+	@Query(value = "SELECT p FROM Post p JOIN TagToPost ttp ON p.id = ttp.postId WHERE ttp.tagId = ?2 AND p.isActive=true AND p.moderationStatus='ACCEPTED' AND p.postTime <= ?1",
+			countQuery = "SELECT COUNT(p) FROM Post p JOIN TagToPost ttp ON p.id = ttp.postId WHERE ttp.tagId = ?2 AND p.isActive=true AND p.moderationStatus='ACCEPTED' AND p.postTime <= ?1")
+	Page<Post> findAllByTag(LocalDateTime now, int tagId, Pageable pageable);
 }
