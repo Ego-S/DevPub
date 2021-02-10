@@ -8,6 +8,7 @@ import lombok.ToString;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @NoArgsConstructor
 @Getter
@@ -48,4 +49,10 @@ public class Post {
 
 	@Column(name = "view_count", nullable = false)
 	private int viewCount;
+
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "postId")
+	private List<Comment> comments;
+
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "postId")
+	private List<Vote> votes;
 }

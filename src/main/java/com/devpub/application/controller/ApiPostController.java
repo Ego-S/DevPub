@@ -21,7 +21,7 @@ public class ApiPostController {
 	public ResponseEntity<PostPageDTO> findAllPost(@RequestParam(name = "offset") int offset,
 												  @RequestParam(name = "limit") int limit,
 												  @RequestParam(name = "mode") String mode) {
-		return new ResponseEntity<>(postService.getPostsPage(offset, limit, mode), HttpStatus.OK);
+		return new ResponseEntity<>(postService.getPostPage(offset, limit, mode), HttpStatus.OK);
 	}
 
 	@GetMapping("search")

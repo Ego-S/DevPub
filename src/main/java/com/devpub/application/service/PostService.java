@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -39,30 +41,31 @@ public class PostService {
 		this.tagRepository = tagRepository;
 	}
 
-	public PostPageDTO getPostsPage(int offset, int limit, String mode) {
-		int pageNumber = offset / limit;
-		Page<Post> page;
-		Pageable pageable = PageRequest.of(pageNumber, limit);
+	public PostPageDTO getPostPage(int offset, int limit, String mode) {
+		Page<Post> postPage;
+		Sort sort;
+		Pageable pageable;
+		int page = offset / limit;
 
-		switch (mode) {
-			case "recent" :
-				page = postRepository.findAllAcceptedPostsBeforeSortedByTimeDesc(LocalDateTime.now(), pageable);
+		switch(mode) {
+			case "best" :
+				pageable = PageRequest.of(page, limit);
+				postPage = postRepository.findAllBestAcceptedPostsBefore(LocalDateTime.now() ,pageable);
+				return postPageToPostPageDTO(postPage);
+			case "popular" :
+				sort = JpaSort.unsafe(Sort.Direction.DESC, "size(p.comments)");
 				break;
 			case "early" :
-				page = postRepository.findAllAcceptedPostsBeforeSortedByTimeAsc(LocalDateTime.now(), pageable);
+				sort = Sort.by("postTime").ascending();
 				break;
-			case "popular" :
-				page = postRepository.findAllPopularAcceptedPostsBefore(LocalDateTime.now(), pageable);
-				break;
-			case "best" :
-				page = postRepository.findAllBestAcceptedPostsBefore(LocalDateTime.now(), pageable);
-				break;
-			default: page = postRepository.findAllAcceptedPostsBefore(LocalDateTime.now(), pageable);
+			default:
+				sort = Sort.by("postTime").descending();
 				break;
 		}
+		pageable = PageRequest.of(page, limit, sort);
+		postPage = postRepository.findAll(LocalDateTime.now() ,pageable);
 
-		int count = (int) page.getTotalElements();
-		return postListToPostDTO(count, page.getContent());
+		return postPageToPostPageDTO(postPage);
 	}
 
 	public PostPageDTO getPostsPageLike(int offset, int limit, String query) {
@@ -71,14 +74,13 @@ public class PostService {
 		Pageable pageable = PageRequest.of(pageNumber, limit);
 
 		if (query.length() == 0) {
-			page = postRepository.findAllAcceptedPostsBefore(LocalDateTime.now(), pageable);
+			page = postRepository.findAll(LocalDateTime.now(), pageable);
 		} else {
 			query = "%" + query + "%";
 			page = postRepository.search(LocalDateTime.now(), query, pageable);
 		}
 
-		int count = (int) page.getTotalElements();
-		return postListToPostDTO(count, page.getContent());
+		return postPageToPostPageDTO(page);
 	}
 
 	public PostPageDTO getPostsPageByDate(int offset, int limit, LocalDate date) {
@@ -90,8 +92,7 @@ public class PostService {
 
 		Page<Post> page = postRepository.findAllByDate(LocalDateTime.now(), from, to, pageable);
 
-		int count = (int) page.getTotalElements();
-		return postListToPostDTO(count, page.getContent());
+		return postPageToPostPageDTO(page);
 	}
 
 	public PostPageDTO getPostsPageByTag(int offset, int limit, String tag) {
@@ -101,15 +102,21 @@ public class PostService {
 		int tagId = tagRepository.getIdByName(tag);
 		Page<Post> page = postRepository.findAllByTag(LocalDateTime.now(), tagId, pageable);
 
-		int count = (int) page.getTotalElements();
-		return postListToPostDTO(count, page.getContent());
+		return postPageToPostPageDTO(page);
 	}
 
-	private PostPageDTO postListToPostDTO(int count, List<Post> postList) {
-		PostPageDTO postPageDTO = new PostPageDTO();
-		List<PostDTO> postDTOList = new ArrayList<>();
+	private UserForPostDTO userToUserForPostDTO(User user) {
+		return new UserForPostDTO(user.getId(), user.getName());
+	}
 
-		postList.forEach(post -> {
+	private String getAnnounceFromText(String text) {
+		String clearText = text.replaceAll("(<\\S+>)", "");
+		return clearText.substring(0, Math.min(clearText.length(), announceLength));
+	}
+
+	private PostPageDTO postPageToPostPageDTO(Page<Post> postPage) {
+		List<PostDTO> postDTOList = new ArrayList<>();
+		postPage.getContent().forEach(post -> {
 			PostDTO postDTO = new PostDTO();
 			postDTO.setId(post.getId());
 			postDTO.setTimestamp(Timestamp.valueOf(post.getPostTime()).getTime()/1000);
@@ -122,18 +129,7 @@ public class PostService {
 			postDTO.setViewCount(post.getViewCount());
 			postDTOList.add(postDTO);
 		});
-
-		postPageDTO.setCount(count);
-		postPageDTO.setPosts(postDTOList);
-		return postPageDTO;
-	}
-
-	private UserForPostDTO userToUserForPostDTO(User user) {
-		return new UserForPostDTO(user.getId(), user.getName());
-	}
-
-	private String getAnnounceFromText(String text) {
-		String clearText = text.replaceAll("(<\\S+>)", "");
-		return clearText.substring(0, Math.min(clearText.length(), announceLength));
+		int count = (int) postPage.getTotalElements();
+		return new PostPageDTO(count, postDTOList);
 	}
 }
