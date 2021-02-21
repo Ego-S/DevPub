@@ -1,5 +1,6 @@
 package com.devpub.application.model;
 
+import com.devpub.application.enums.Role;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,4 +40,8 @@ public class User {
 
 	@Column(name = "photo", columnDefinition = "TEXT")
 	private String photoPath;
+
+	public Role getRole() {
+		return isModerator ? Role.MODERATOR : Role.USER;
+	}
 }

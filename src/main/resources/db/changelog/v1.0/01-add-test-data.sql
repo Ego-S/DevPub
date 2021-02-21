@@ -1,9 +1,12 @@
 INSERT INTO users
 (email, is_moderator, name, password, reg_time)
 VALUES
-('user1@gmail.com', 1, 'user1', 'user1', '2020-01-01 12:00:00'),
-('user2@gmail.com', 0, 'user2', 'user2', '2020-01-01 12:00:00')
+('moderator@gmail.com', 1, 'moderator', '$2y$12$FdXdOhOt3C1pRggs57eDoeQA6N8IV94xGyasCf4IfzBpUMO5w5WSO', '2020-01-01 12:00:00'),
+('user@gmail.com', 0, 'user', '$2y$12$cu5W7qEzS6BZ/mz2I.TNFuPGo57drHWf59I17dKmTcCEULgyrnxiu', '2020-01-01 12:00:00')
 GO
+--for login use
+--moderator@gmail.com: moderator
+--user@gmail.com: useruser
 
 
 INSERT INTO posts

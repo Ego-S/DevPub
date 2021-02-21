@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class UserAuthDTO {
+public class LogoutResponse {
 	private boolean result;
 }

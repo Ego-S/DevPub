@@ -1,5 +1,6 @@
 package com.devpub.application.repository;
 
+import com.devpub.application.enums.ModerationStatus;
 import com.devpub.application.model.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,4 +43,8 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 	@Query(value = "SELECT p FROM Post p JOIN TagToPost ttp ON p.id = ttp.postId WHERE ttp.tagId = ?2 AND p.isActive=true AND p.moderationStatus='ACCEPTED' AND p.postTime <= ?1",
 			countQuery = "SELECT COUNT(p) FROM Post p JOIN TagToPost ttp ON p.id = ttp.postId WHERE ttp.tagId = ?2 AND p.isActive=true AND p.moderationStatus='ACCEPTED' AND p.postTime <= ?1")
 	Page<Post> findAllByTag(LocalDateTime now, int tagId, Pageable pageable);
+
+
+	@Query("SELECT COUNT(p) FROM Post p WHERE moderationStatus = ?1")
+	int countByStatus (ModerationStatus status);
 }
