@@ -3,10 +3,12 @@ package com.devpub.application.service;
 import com.devpub.application.dto.PostDTO;
 import com.devpub.application.dto.PostPageDTO;
 import com.devpub.application.dto.UserForPostDTO;
+import com.devpub.application.enums.ModerationStatus;
 import com.devpub.application.model.Post;
 import com.devpub.application.model.User;
 import com.devpub.application.repository.PostRepository;
 import com.devpub.application.repository.TagRepository;
+import com.devpub.application.repository.UserRepository;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,8 +17,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,15 +34,17 @@ public class PostService {
 
 	private final PostRepository postRepository;
 	private final TagRepository tagRepository;
+	private final UserRepository userRepository;
 
 	@Value("${announceLength}")
 	private int announceLength;
 
 
 	@Autowired
-	public PostService (PostRepository postRepository, TagRepository tagRepository) {
+	public PostService (PostRepository postRepository, TagRepository tagRepository, UserRepository userRepository) {
 		this.postRepository = postRepository;
 		this.tagRepository = tagRepository;
+		this.userRepository = userRepository;
 	}
 
 	public PostPageDTO getPostPage(int offset, int limit, String mode) {
@@ -50,7 +56,7 @@ public class PostService {
 		switch(mode) {
 			case "best" :
 				pageable = PageRequest.of(page, limit);
-				postPage = postRepository.findAllBestAcceptedPostsBefore(LocalDateTime.now() ,pageable);
+				postPage = postRepository.findAllBestAcceptedPostsBefore(true, ModerationStatus.ACCEPTED.toString(), LocalDateTime.now() ,pageable);
 				return postPageToPostPageDTO(postPage);
 			case "popular" :
 				sort = JpaSort.unsafe(Sort.Direction.DESC, "size(p.comments)");
@@ -63,7 +69,7 @@ public class PostService {
 				break;
 		}
 		pageable = PageRequest.of(page, limit, sort);
-		postPage = postRepository.findAll(LocalDateTime.now() ,pageable);
+		postPage = postRepository.findAll(true, ModerationStatus.ACCEPTED,LocalDateTime.now() ,pageable);
 
 		return postPageToPostPageDTO(postPage);
 	}
@@ -74,10 +80,10 @@ public class PostService {
 		Pageable pageable = PageRequest.of(pageNumber, limit);
 
 		if (query.length() == 0) {
-			page = postRepository.findAll(LocalDateTime.now(), pageable);
+			page = postRepository.findAll(true, ModerationStatus.ACCEPTED, LocalDateTime.now(), pageable);
 		} else {
 			query = "%" + query + "%";
-			page = postRepository.search(LocalDateTime.now(), query, pageable);
+			page = postRepository.search(true, ModerationStatus.ACCEPTED, LocalDateTime.now(), query, pageable);
 		}
 
 		return postPageToPostPageDTO(page);
@@ -90,7 +96,7 @@ public class PostService {
 		LocalDateTime from = date.atTime(LocalTime.MIN);
 		LocalDateTime to = date.atTime(LocalTime.MAX);
 
-		Page<Post> page = postRepository.findAllByDate(LocalDateTime.now(), from, to, pageable);
+		Page<Post> page = postRepository.findAllByDate(true, ModerationStatus.ACCEPTED, LocalDateTime.now(), from, to, pageable);
 
 		return postPageToPostPageDTO(page);
 	}
@@ -100,9 +106,38 @@ public class PostService {
 		Pageable pageable = PageRequest.of(pageNumber, limit);
 
 		int tagId = tagRepository.getIdByName(tag);
-		Page<Post> page = postRepository.findAllByTag(LocalDateTime.now(), tagId, pageable);
+		Page<Post> page = postRepository.findAllByTag(true, ModerationStatus.ACCEPTED, LocalDateTime.now(), tagId, pageable);
 
 		return postPageToPostPageDTO(page);
+	}
+
+	public PostPageDTO myPosts(int offset, int limit, String status, Principal principal) {
+		String email = principal.getName();
+		User user = userRepository.findByEmail(email)
+						.orElseThrow(() -> new UsernameNotFoundException(email));
+
+		Page<Post> postPage;
+		Sort sort = Sort.by("postTime").descending();
+		int page = offset / limit;
+		Pageable pageable = PageRequest.of(page, limit, sort);
+
+		switch (status) {
+			case "inactive" :
+				postPage = postRepository.findMyPostWithAnyStatus(user, false, pageable);
+				break;
+			case "pending" :
+				postPage = postRepository.findMyPosts(user, true, ModerationStatus.NEW, pageable);
+				break;
+			case "declined" :
+				postPage = postRepository.findMyPosts(user, true, ModerationStatus.DECLINED, pageable);
+				break;
+			case "published" :
+				postPage = postRepository.findMyPosts(user, true, ModerationStatus.ACCEPTED, pageable);
+				break;
+			default: return new PostPageDTO();
+		}
+
+		return postPageToPostPageDTO(postPage);
 	}
 
 	private UserForPostDTO userToUserForPostDTO(User user) {
@@ -132,4 +167,6 @@ public class PostService {
 		int count = (int) postPage.getTotalElements();
 		return new PostPageDTO(count, postDTOList);
 	}
+
+
 }
