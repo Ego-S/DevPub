@@ -38,8 +38,8 @@ public class ApiAuthController {
 
 	@GetMapping("/logout")
 	@PreAuthorize("hasAuthority('user')")
-	public ResponseEntity<LogoutResponse> logout(HttpServletRequest request, HttpServletResponse response) {
-		return ResponseEntity.ok(userService.logout(request, response));
+	public ResponseEntity<LogoutResponse> logout() {
+		return ResponseEntity.ok(userService.logout());
 	}
 
 

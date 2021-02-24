@@ -8,10 +8,14 @@ import com.devpub.application.enums.ModerationStatus;
 import com.devpub.application.repository.PostRepository;
 import com.devpub.application.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,6 +25,8 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 public class UserService {
@@ -51,15 +57,18 @@ public class UserService {
 		}
 	}
 
-	public LogoutResponse logout(HttpServletRequest request, HttpServletResponse response){
-		SecurityContextLogoutHandler securityContextLogoutHandler = new SecurityContextLogoutHandler();
-		for (Cookie cookie : request.getCookies()) {
-			String cookieName = cookie.getName();
-			Cookie cookieToDelete = new Cookie(cookieName, null);
-			cookieToDelete.setMaxAge(0);
-			response.addCookie(cookieToDelete);
-		}
-		securityContextLogoutHandler.logout(request, response, null);
+	public LogoutResponse logout(){
+		SecurityContext securityContext = SecurityContextHolder.getContext();
+		Set<GrantedAuthority> grantedAuthority = new HashSet<>();
+		grantedAuthority.add(new SimpleGrantedAuthority("ROLE_ANONYMOUS"));
+		securityContext.setAuthentication(
+				new AnonymousAuthenticationToken(
+						String.valueOf(System.currentTimeMillis()),
+						new User("anonymous", "anonymous", grantedAuthority),
+						grantedAuthority
+				)
+		);
+
 		return new LogoutResponse(true);
 	}
 
