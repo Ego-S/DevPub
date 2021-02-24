@@ -2,6 +2,7 @@ package com.devpub.application.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
 public class DefaultController {
@@ -10,24 +11,8 @@ public class DefaultController {
 		return "index";
 	}
 
-	@RequestMapping("posts/recent")
-	public String recent() {
-		return "index";
+	@RequestMapping(method = {RequestMethod.OPTIONS, RequestMethod.GET}, value = "/**/{path: *[^\\.]*}")
+	public String redirectToIndex() {
+		return "forward:/";
 	}
-
-	@RequestMapping("posts/popular")
-	public String popular() {
-		return "index";
-	}
-
-	@RequestMapping("posts/best")
-	public String best() {
-		return "index";
-	}
-
-	@RequestMapping("posts/early")
-	public String early() {
-		return "index";
-	}
-	
 }
