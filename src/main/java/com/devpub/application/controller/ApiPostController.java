@@ -1,15 +1,13 @@
 package com.devpub.application.controller;
 
+import com.devpub.application.dto.PostDTO;
 import com.devpub.application.dto.PostPageDTO;
 import com.devpub.application.service.PostService;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -58,7 +56,7 @@ public class ApiPostController {
 		return ResponseEntity.ok(postService.getPostsPageByTag(offset, limit, tag));
 	}
 
-	@GetMapping("my")
+	@GetMapping("/my")
 	@PreAuthorize("hasAuthority('user')")
 	public ResponseEntity<PostPageDTO> myPosts(
 			@RequestParam(name = "offset") int offset,
@@ -67,5 +65,24 @@ public class ApiPostController {
 			Principal principal
 	) {
 		return ResponseEntity.ok(postService.myPosts(offset, limit, status, principal));
+	}
+
+	@GetMapping("/moderation")
+	@PreAuthorize("hasAuthority('moderator')")
+	public ResponseEntity<PostPageDTO> moderation(
+			@RequestParam(name = "offset") int offset,
+			@RequestParam(name = "limit") int limit,
+			@RequestParam(name = "status") String status,
+			Principal principal
+	) {
+		return ResponseEntity.ok(postService.postsForModeration(offset, limit, status, principal));
+	}
+
+	@GetMapping("/{ID}")
+	public ResponseEntity<PostDTO> getPost(
+			@PathVariable("ID") int id,
+			Principal principal
+	) {
+		return postService.getPostById(id, principal);
 	}
 }

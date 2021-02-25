@@ -22,7 +22,7 @@ public class Comment {
 	private int id;
 
 	@Column(name = "parent_id")
-	private int parentId;
+	private Integer parentId;
 
 	@Column(name = "post_id", nullable = false)
 	private int postId;

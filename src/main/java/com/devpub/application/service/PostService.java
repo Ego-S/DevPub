@@ -1,11 +1,11 @@
 package com.devpub.application.service;
 
-import com.devpub.application.dto.PostDTO;
-import com.devpub.application.dto.PostPageDTO;
-import com.devpub.application.dto.UserForPostDTO;
+import com.devpub.application.dto.*;
 import com.devpub.application.enums.ModerationStatus;
+import com.devpub.application.model.Comment;
 import com.devpub.application.model.Post;
 import com.devpub.application.model.User;
+import com.devpub.application.repository.CommentRepository;
 import com.devpub.application.repository.PostRepository;
 import com.devpub.application.repository.TagRepository;
 import com.devpub.application.repository.UserRepository;
@@ -17,6 +17,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -35,16 +37,22 @@ public class PostService {
 	private final PostRepository postRepository;
 	private final TagRepository tagRepository;
 	private final UserRepository userRepository;
+	private final CommentRepository commentRepository;
 
 	@Value("${announceLength}")
 	private int announceLength;
 
 
 	@Autowired
-	public PostService (PostRepository postRepository, TagRepository tagRepository, UserRepository userRepository) {
+	public PostService (
+			PostRepository postRepository,
+			TagRepository tagRepository,
+			UserRepository userRepository,
+			CommentRepository commentRepository) {
 		this.postRepository = postRepository;
 		this.tagRepository = tagRepository;
 		this.userRepository = userRepository;
+		this.commentRepository = commentRepository;
 	}
 
 	public PostPageDTO getPostPage(int offset, int limit, String mode) {
@@ -112,10 +120,7 @@ public class PostService {
 	}
 
 	public PostPageDTO myPosts(int offset, int limit, String status, Principal principal) {
-		String email = principal.getName();
-		User user = userRepository.findByEmail(email)
-						.orElseThrow(() -> new UsernameNotFoundException(email));
-
+		User user = getUser(principal);
 		Page<Post> postPage;
 		Sort sort = Sort.by("postTime").descending();
 		int page = offset / limit;
@@ -140,6 +145,58 @@ public class PostService {
 		return postPageToPostPageDTO(postPage);
 	}
 
+
+
+	public PostPageDTO postsForModeration(int offset, int limit, String status, Principal principal) {
+		User moderator = getUser(principal);
+		Page<Post> postPage;
+		Sort sort = Sort.by("postTime").descending();
+		int page = offset / limit;
+		Pageable pageable = PageRequest.of(page, limit, sort);
+
+		switch (status) {
+			case "new" :
+				postPage = postRepository.findAllByModerationStatus(ModerationStatus.NEW, pageable);
+				break;
+			case "declined" :
+				postPage = postRepository.findAllModeratedByMe(ModerationStatus.DECLINED, moderator, pageable);
+				break;
+			case "accepted" :
+				postPage = postRepository.findAllModeratedByMe(ModerationStatus.ACCEPTED, moderator, pageable);
+				break;
+			default: return new PostPageDTO();
+		}
+		return postPageToPostPageDTO(postPage);
+	}
+
+	public ResponseEntity<PostDTO> getPostById(int id, Principal principal) {
+		// Does it exist?
+		Post post = postRepository.findPostById(id).orElse(null);
+		if (post == null) {
+			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+		}
+
+		// Who is try to see it? Should we increment viewCount?
+		User user;
+		if (principal != null) {
+			user = getUser(principal);
+		} else {
+			user = null;
+		}
+		// Increment viewCount if we should
+		if (user == null || user != post.getUser() || !user.isModerator()) {
+			post.setViewCount(post.getViewCount() + 1);
+			postRepository.save(post);
+		}
+		return new ResponseEntity<>(postToPostDTO(post), HttpStatus.OK);
+	}
+
+	private User getUser(Principal principal) throws UsernameNotFoundException {
+		String email = principal.getName();
+		return userRepository.findByEmail(email)
+				.orElseThrow(() -> new UsernameNotFoundException(email));
+	}
+
 	private UserForPostDTO userToUserForPostDTO(User user) {
 		return new UserForPostDTO(user.getId(), user.getName());
 	}
@@ -152,21 +209,56 @@ public class PostService {
 	private PostPageDTO postPageToPostPageDTO(Page<Post> postPage) {
 		List<PostDTO> postDTOList = new ArrayList<>();
 		postPage.getContent().forEach(post -> {
-			PostDTO postDTO = new PostDTO();
-			postDTO.setId(post.getId());
-			postDTO.setTimestamp(Timestamp.valueOf(post.getPostTime()).getTime()/1000);
-			postDTO.setUser(userToUserForPostDTO(post.getUser()));
-			postDTO.setTitle(post.getTitle());
+			PostDTO postDTO = postToPostDTO(post);
+			// Transform postDTO format for postDTOPage
 			postDTO.setAnnounce(getAnnounceFromText(post.getText()));
-			postDTO.setLikeCount(postRepository.likesCountOnPost(post));
-			postDTO.setDislikeCount(postRepository.dislikesCountOnPost(post));
-			postDTO.setCommentCount(postRepository.commentCountByPost(post.getId()));
-			postDTO.setViewCount(post.getViewCount());
+			postDTO.setText(null);
+			postDTO.setIsActive(null);
+			postDTO.setCommentCount(postDTO.getComments().size());
+			postDTO.setComments(null);
+			postDTO.setTags(null);
 			postDTOList.add(postDTO);
 		});
 		int count = (int) postPage.getTotalElements();
 		return new PostPageDTO(count, postDTOList);
 	}
 
+	private PostDTO postToPostDTO(Post post) {
+		return new PostDTO(
+				post.getId(),
+				Timestamp.valueOf(post.getPostTime()).getTime() / 1000,
+				post.isActive() && post.getModerationStatus().equals(ModerationStatus.ACCEPTED),
+				userToUserForPostDTO(post.getUser()),
+				post.getTitle(),
+				null,
+				post.getText(),
+				postRepository.likesCountOnPost(post),
+				postRepository.dislikesCountOnPost(post),
+				null,
+				post.getViewCount(),
+				listCommentToListCommentDTO(commentRepository.findAllByPostId(post.getId())),
+				tagRepository.findTagsForPost(post.getId())
+		);
+	}
 
+	private List<CommentDTO> listCommentToListCommentDTO(List<Comment> commentList) {
+		List<CommentDTO> commentDTOList = new ArrayList<>();
+		commentList.forEach(comment -> {
+			User user =
+					userRepository.findById(comment.getUserId())
+							.orElseThrow(() -> new UsernameNotFoundException("Can't found author of comments with id="
+									+ comment.getId()));
+			CommentDTO commentDTO = new CommentDTO(
+					comment.getId(),
+					Timestamp.valueOf(comment.getTime()).getTime() / 1000,
+					comment.getText(),
+					new UserForCommentDTO(
+							user.getId(),
+							user.getName(),
+							user.getPhotoPath()
+					));
+			commentDTOList.add(commentDTO);
+		});
+		return commentDTOList;
+	}
 }

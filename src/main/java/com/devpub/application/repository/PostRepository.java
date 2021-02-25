@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Integer> {
@@ -102,4 +103,12 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 			ModerationStatus status,
 			Pageable pageable
 	);
+
+	Page<Post> findAllByModerationStatus(ModerationStatus status, Pageable pageable);
+
+	@Query(value = "SELECT p FROM Post p WHERE moderationStatus=:status AND moderator=:moderator",
+			countQuery = "SELECT COUNT(p) FROM Post p Where moderationStatus=:status AND moderator=:moderator")
+	Page<Post> findAllModeratedByMe(ModerationStatus status, User moderator, Pageable pageable);
+
+	Optional<Post> findPostById(int id);
 }
