@@ -1,6 +1,6 @@
 package com.devpub.application.service;
 
-import com.devpub.application.dto.SettingsDTO;
+import com.devpub.application.dto.response.SettingsDTO;
 import com.devpub.application.repository.SettingsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

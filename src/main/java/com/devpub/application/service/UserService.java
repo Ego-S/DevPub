@@ -1,9 +1,9 @@
 package com.devpub.application.service;
 
-import com.devpub.application.dto.LoginDTO;
-import com.devpub.application.dto.LoginRequest;
-import com.devpub.application.dto.LogoutResponse;
-import com.devpub.application.dto.UserLoginDTO;
+import com.devpub.application.dto.response.LoginDTO;
+import com.devpub.application.dto.request.LoginRequest;
+import com.devpub.application.dto.response.LogoutResponse;
+import com.devpub.application.dto.response.UserLoginDTO;
 import com.devpub.application.enums.ModerationStatus;
 import com.devpub.application.repository.PostRepository;
 import com.devpub.application.repository.UserRepository;
@@ -19,12 +19,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.HashSet;
 import java.util.Set;
 

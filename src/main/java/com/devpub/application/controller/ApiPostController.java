@@ -1,7 +1,7 @@
 package com.devpub.application.controller;
 
-import com.devpub.application.dto.PostDTO;
-import com.devpub.application.dto.PostPageDTO;
+import com.devpub.application.dto.response.PostDTO;
+import com.devpub.application.dto.response.PostPageDTO;
 import com.devpub.application.service.PostService;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;

@@ -1,5 +1,6 @@
-package com.devpub.application.dto;
+package com.devpub.application.dto.response;
 
+import com.devpub.application.dto.response.UserLoginDTO;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;

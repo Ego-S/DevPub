@@ -1,8 +1,8 @@
 package com.devpub.application.controller;
 
-import com.devpub.application.dto.LoginDTO;
-import com.devpub.application.dto.LoginRequest;
-import com.devpub.application.dto.LogoutResponse;
+import com.devpub.application.dto.response.LoginDTO;
+import com.devpub.application.dto.request.LoginRequest;
+import com.devpub.application.dto.response.LogoutResponse;
 import com.devpub.application.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

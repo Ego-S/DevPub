@@ -1,9 +1,9 @@
 package com.devpub.application.controller;
 
-import com.devpub.application.dto.SettingsDTO;
-import com.devpub.application.dto.InitResponse;
-import com.devpub.application.dto.TagDTO;
-import com.devpub.application.dto.TagsDTO;
+import com.devpub.application.dto.response.SettingsDTO;
+import com.devpub.application.dto.response.InitResponse;
+import com.devpub.application.dto.response.TagDTO;
+import com.devpub.application.dto.response.TagsDTO;
 import com.devpub.application.service.SettingsService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

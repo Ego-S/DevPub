@@ -1,6 +1,6 @@
 package com.devpub.application.service;
 
-import com.devpub.application.dto.*;
+import com.devpub.application.dto.response.*;
 import com.devpub.application.enums.ModerationStatus;
 import com.devpub.application.model.Comment;
 import com.devpub.application.model.Post;

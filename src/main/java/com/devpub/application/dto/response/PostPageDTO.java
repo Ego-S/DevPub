@@ -1,5 +1,6 @@
-package com.devpub.application.dto;
+package com.devpub.application.dto.response;
 
+import com.devpub.application.dto.response.PostDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
