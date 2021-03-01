@@ -10,7 +10,7 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostPOSTResult {
+public class ResultDTO {
 	private boolean result;
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Map<String, String> errors;

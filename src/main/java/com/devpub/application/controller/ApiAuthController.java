@@ -1,8 +1,10 @@
 package com.devpub.application.controller;
 
+import com.devpub.application.dto.request.RegistrationBody;
 import com.devpub.application.dto.response.LoginDTO;
 import com.devpub.application.dto.request.LoginRequest;
 import com.devpub.application.dto.response.LogoutResponse;
+import com.devpub.application.dto.response.ResultDTO;
 import com.devpub.application.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +40,11 @@ public class ApiAuthController {
 	@PreAuthorize("hasAuthority('user')")
 	public ResponseEntity<LogoutResponse> logout() {
 		return ResponseEntity.ok(userService.logout());
+	}
+
+	@PostMapping("/register")
+	public ResponseEntity<ResultDTO> registration(@RequestBody RegistrationBody registrationBody) {
+		return userService.registration(registrationBody);
 	}
 
 

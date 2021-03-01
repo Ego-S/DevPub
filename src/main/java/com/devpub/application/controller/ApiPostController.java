@@ -2,7 +2,7 @@ package com.devpub.application.controller;
 
 import com.devpub.application.dto.request.PostRequest;
 import com.devpub.application.dto.response.PostDTO;
-import com.devpub.application.dto.response.PostPOSTResult;
+import com.devpub.application.dto.response.ResultDTO;
 import com.devpub.application.dto.response.PostPageDTO;
 import com.devpub.application.service.PostService;
 import lombok.Data;
@@ -90,7 +90,7 @@ public class ApiPostController {
 
 	@PostMapping()
 	@PreAuthorize("hasAuthority('user')")
-	public ResponseEntity<PostPOSTResult> post(
+	public ResponseEntity<ResultDTO> post(
 			@RequestBody PostRequest post,
 			Principal principal
 			) {

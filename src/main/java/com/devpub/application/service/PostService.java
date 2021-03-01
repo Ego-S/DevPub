@@ -203,7 +203,7 @@ public class PostService {
 		return new ResponseEntity<>(postToPostDTO(post), HttpStatus.OK);
 	}
 
-	public ResponseEntity<PostPOSTResult> postPost(PostRequest postRequest, Principal principal) {
+	public ResponseEntity<ResultDTO> postPost(PostRequest postRequest, Principal principal) {
 		User user = getUser(principal);
 
 		Map<String, String> errors = new HashMap<>();
@@ -216,13 +216,13 @@ public class PostService {
 		}
 
 		if (errors.size() != 0) {
-			return ResponseEntity.ok(new PostPOSTResult(false, errors));
+			return ResponseEntity.ok(new ResultDTO(false, errors));
 		} else {
 			return ResponseEntity.ok(postPostRequest(postRequest, user));
 		}
 	}
 
-	private PostPOSTResult postPostRequest(PostRequest postRequest, User user) {
+	private ResultDTO postPostRequest(PostRequest postRequest, User user) {
 		Post post = new Post();
 		post.setActive(postRequest.getActive() == 1);
 		post.setModerationStatus(ModerationStatus.NEW);
@@ -237,7 +237,7 @@ public class PostService {
 			tagService.saveTag(tagName, post.getId());
 		}
 
-		return new PostPOSTResult(true, null);
+		return new ResultDTO(true, null);
 	}
 
 	//=================================================================================
