@@ -25,3 +25,7 @@ textMinLength: 50
 #BCryptPasswordEncoder strength
 encoderStrength: 12
 
+#registration-form validation parameters
+usernameMinLength: 3
+passwordMinLength: 6
+

@@ -11,6 +11,7 @@ import com.devpub.application.enums.ModerationStatus;
 import com.devpub.application.repository.PostRepository;
 import com.devpub.application.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -43,6 +44,11 @@ public class UserService {
 	private final String USERNAME_IS_INVALID_ERROR = "Username is too short";
 	private final String PASSWORD_TO_SHORT_ERROR = "Password is too short";
 	private final String CAPTCHA_ERROR = "The captcha is wrong";
+
+	@Value("${usernameMinLength}")
+	private int usernameMinLength;
+	@Value("${passwordMinLength}")
+	private int passwordMinLength;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -108,11 +114,11 @@ public class UserService {
 		}
 
 		//TODO what kind of errors can be on user-name field?
-		if (registrationBody.getName().length() < 3) {
+		if (registrationBody.getName().length() < usernameMinLength) {
 			errors.put("name", USERNAME_IS_INVALID_ERROR);
 		}
 
-		if (registrationBody.getPassword().length() < 6) {
+		if (registrationBody.getPassword().length() < passwordMinLength) {
 			errors.put("password", PASSWORD_TO_SHORT_ERROR);
 		}
 
