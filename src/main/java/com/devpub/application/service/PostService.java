@@ -1,5 +1,6 @@
 package com.devpub.application.service;
 
+import com.devpub.application.dto.request.PostRequest;
 import com.devpub.application.dto.response.*;
 import com.devpub.application.enums.ModerationStatus;
 import com.devpub.application.model.Comment;
@@ -7,7 +8,6 @@ import com.devpub.application.model.Post;
 import com.devpub.application.model.User;
 import com.devpub.application.repository.CommentRepository;
 import com.devpub.application.repository.PostRepository;
-import com.devpub.application.repository.TagRepository;
 import com.devpub.application.repository.UserRepository;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,33 +27,45 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Service
 public class PostService {
 
 	private final PostRepository postRepository;
-	private final TagRepository tagRepository;
 	private final UserRepository userRepository;
 	private final CommentRepository commentRepository;
 
+	private final TagService tagService;
+
 	@Value("${announceLength}")
 	private int announceLength;
+	@Value("${titleMinLength}")
+	private int titleMinLength;
+	@Value("${textMinLength}")
+	private int textMinLength;
 
+	private final String TITLE_TOO_SHORT_ERROR = "Title is empty or too short.";
+	private final String TEXT_TOO_SHORT_ERROR = "Text is too short.";
 
 	@Autowired
 	public PostService (
 			PostRepository postRepository,
-			TagRepository tagRepository,
 			UserRepository userRepository,
-			CommentRepository commentRepository) {
+			CommentRepository commentRepository,
+			TagService tagService) {
 		this.postRepository = postRepository;
-		this.tagRepository = tagRepository;
 		this.userRepository = userRepository;
 		this.commentRepository = commentRepository;
+		this.tagService = tagService;
 	}
+
+	//=============================================================================
 
 	public PostPageDTO getPostPage(int offset, int limit, String mode) {
 		Page<Post> postPage;
@@ -113,7 +125,7 @@ public class PostService {
 		int pageNumber = offset / limit;
 		Pageable pageable = PageRequest.of(pageNumber, limit);
 
-		int tagId = tagRepository.getIdByName(tag);
+		int tagId = tagService.getIdByName(tag);
 		Page<Post> page = postRepository.findAllByTag(true, ModerationStatus.ACCEPTED, LocalDateTime.now(), tagId, pageable);
 
 		return postPageToPostPageDTO(page);
@@ -191,6 +203,49 @@ public class PostService {
 		return new ResponseEntity<>(postToPostDTO(post), HttpStatus.OK);
 	}
 
+	public ResponseEntity<PostPOSTResult> postPost(PostRequest postRequest, Principal principal) {
+		User user = getUser(principal);
+
+		Map<String, String> errors = new HashMap<>();
+
+		if (postRequest.getText().length() < textMinLength) {
+			errors.put("text", TEXT_TOO_SHORT_ERROR);
+		}
+		if (postRequest.getTitle().length() < titleMinLength) {
+			errors.put("title", TITLE_TOO_SHORT_ERROR);
+		}
+
+		if (errors.size() != 0) {
+			return ResponseEntity.ok(new PostPOSTResult(false, errors));
+		} else {
+			return ResponseEntity.ok(postPostRequest(postRequest, user));
+		}
+	}
+
+	private PostPOSTResult postPostRequest(PostRequest postRequest, User user) {
+		Post post = new Post();
+		post.setActive(postRequest.getActive() == 1);
+		post.setModerationStatus(ModerationStatus.NEW);
+		post.setUser(user);
+		post.setPostTime(longToLocalDateTime(Math.max(System.currentTimeMillis() / 1000, postRequest.getTimestamp())));
+		post.setTitle(postRequest.getTitle());
+		post.setText(postRequest.getText());
+
+		postRepository.save(post);
+
+		for (String tagName : postRequest.getTags()) {
+			tagService.saveTag(tagName, post.getId());
+		}
+
+		return new PostPOSTResult(true, null);
+	}
+
+	//=================================================================================
+
+	private LocalDateTime longToLocalDateTime(long sec) {
+		return LocalDateTime.ofEpochSecond(sec, 0, ZoneOffset.UTC);
+	}
+
 	private User getUser(Principal principal) throws UsernameNotFoundException {
 		String email = principal.getName();
 		return userRepository.findByEmail(email)
@@ -237,7 +292,7 @@ public class PostService {
 				null,
 				post.getViewCount(),
 				listCommentToListCommentDTO(commentRepository.findAllByPostId(post.getId())),
-				tagRepository.findTagsForPost(post.getId())
+				tagService.findTagsForPost(post.getId())
 		);
 	}
 
@@ -261,4 +316,5 @@ public class PostService {
 		});
 		return commentDTOList;
 	}
+
 }

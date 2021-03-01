@@ -18,6 +18,10 @@ copyrightFrom: 2019
 #length of announce in the post preview
 announceLength: 100
 
+#post requirements
+titleMinLength: 3
+textMinLength: 50
+
 #BCryptPasswordEncoder strength
 encoderStrength: 12
 

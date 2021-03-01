@@ -15,4 +15,6 @@ public interface TagRepository extends CrudRepository<Tag, Integer> {
 
 	@Query("SELECT t.name FROM Tag t JOIN TagToPost ttp ON t.id=ttp.tagId WHERE ttp.postId=:postId")
 	List<String> findTagsForPost(int postId);
+
+	Tag getTagByName(String tagName);
 }
