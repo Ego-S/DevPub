@@ -1,10 +1,12 @@
 package com.devpub.application.controller;
 
 import com.devpub.application.dto.request.RegistrationBody;
+import com.devpub.application.dto.response.CaptchaResponse;
 import com.devpub.application.dto.response.LoginDTO;
 import com.devpub.application.dto.request.LoginRequest;
 import com.devpub.application.dto.response.LogoutResponse;
 import com.devpub.application.dto.response.ResultDTO;
+import com.devpub.application.service.CaptchaService;
 import com.devpub.application.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +20,15 @@ import java.security.Principal;
 public class ApiAuthController {
 
 	private final UserService userService;
+	private final CaptchaService captchaService;
 
 	@Autowired
-	public ApiAuthController(UserService userService) {
+	public ApiAuthController(
+			UserService userService,
+			CaptchaService captchaService
+	) {
 		this.userService = userService;
+		this.captchaService = captchaService;
 	}
 
 	@GetMapping("/check")
@@ -45,6 +52,11 @@ public class ApiAuthController {
 	@PostMapping("/register")
 	public ResponseEntity<ResultDTO> registration(@RequestBody RegistrationBody registrationBody) {
 		return userService.registration(registrationBody);
+	}
+
+	@GetMapping("/captcha")
+	public ResponseEntity<CaptchaResponse> captcha() {
+		return captchaService.captcha();
 	}
 
 

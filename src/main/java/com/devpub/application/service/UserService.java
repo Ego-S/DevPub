@@ -1,6 +1,5 @@
 package com.devpub.application.service;
 
-import com.devpub.application.config.SecurityConfig;
 import com.devpub.application.dto.request.RegistrationBody;
 import com.devpub.application.dto.response.LoginDTO;
 import com.devpub.application.dto.request.LoginRequest;
@@ -27,6 +26,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -133,6 +133,7 @@ public class UserService {
 			user.setName(registrationBody.getName());
 			user.setPassword(passwordEncoder.encode(registrationBody.getPassword()));
 			user.setEmail(registrationBody.getEmail());
+			user.setRegistrationTime(LocalDateTime.now());
 			userRepository.save(user);
 			return ResponseEntity.ok(new ResultDTO(true, null));
 		} else {

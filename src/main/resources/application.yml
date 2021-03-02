@@ -29,3 +29,9 @@ encoderStrength: 12
 usernameMinLength: 3
 passwordMinLength: 6
 
+#captcha settings
+captchaImgHeight: 35
+captchaImgWidth: 100
+captchaMaxLength: 6
+captchaLifeTimeInMinutes: 60
+
