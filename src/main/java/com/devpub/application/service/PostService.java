@@ -1,11 +1,13 @@
 package com.devpub.application.service;
 
 import com.devpub.application.dto.request.PostRequest;
+import com.devpub.application.dto.request.VoteRequest;
 import com.devpub.application.dto.response.*;
 import com.devpub.application.enums.ModerationStatus;
 import com.devpub.application.model.Comment;
 import com.devpub.application.model.Post;
 import com.devpub.application.model.User;
+import com.devpub.application.model.Vote;
 import com.devpub.application.repository.CommentRepository;
 import com.devpub.application.repository.PostRepository;
 import com.devpub.application.repository.UserRepository;
@@ -28,10 +30,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Data
 @Service
@@ -41,6 +40,7 @@ public class PostService {
 	private final UserRepository userRepository;
 	private final CommentRepository commentRepository;
 
+	private final VoteService voteService;
 	private final TagService tagService;
 
 	@Value("${announceLength}")
@@ -58,11 +58,13 @@ public class PostService {
 			PostRepository postRepository,
 			UserRepository userRepository,
 			CommentRepository commentRepository,
+			VoteService voteService,
 			TagService tagService) {
 		this.postRepository = postRepository;
 		this.userRepository = userRepository;
 		this.commentRepository = commentRepository;
 		this.tagService = tagService;
+		this.voteService = voteService;
 	}
 
 	//=============================================================================
@@ -240,6 +242,35 @@ public class PostService {
 		return new ResultDTO(true, null);
 	}
 
+	public ResponseEntity<ResultDTO> vote(int value, VoteRequest voteRequest, Principal principal) {
+		boolean result = true;
+		User user = getUser(principal);
+		Post post = postRepository.findById(voteRequest.getPostId()).get();
+
+		Optional<Vote> optionalVote = voteService.findByUserIdAndPostId(user, post);
+
+		if (optionalVote.isPresent()) {
+			Vote vote = optionalVote.get();
+			if (value == vote.getValue()) {
+				//if it's the same vote - do nothing
+				result = false;
+			} else {
+				//if values is different - modify the vote
+				vote.setValue((byte) value);
+				voteService.save(vote);
+			}
+		//if it's a new vote - save it
+		} else {
+			Vote vote = new Vote();
+			vote.setPostId(post);
+			vote.setTime(LocalDateTime.now());
+			vote.setUserId(user);
+			vote.setValue((byte) value);
+			voteService.save(vote);
+		}
+		return ResponseEntity.ok(new ResultDTO(result, null));
+	}
+
 	//=================================================================================
 
 	private LocalDateTime longToLocalDateTime(long sec) {
@@ -316,5 +347,4 @@ public class PostService {
 		});
 		return commentDTOList;
 	}
-
 }
