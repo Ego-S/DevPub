@@ -17,4 +17,11 @@ public interface TagRepository extends CrudRepository<Tag, Integer> {
 	List<String> findTagsForPost(int postId);
 
 	Tag getTagByName(String tagName);
+
+	List<Tag> findByNameLike(String query);
+
+	//Have to complete this query here cause "The dependencies of some of the beans in the application context form a
+	// cycle" when i try inject PostService into TagService
+	@Query("SELECT COUNT(p) FROM Post p")
+	int getAllPostCount();
 }

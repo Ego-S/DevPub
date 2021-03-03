@@ -1,12 +1,16 @@
 package com.devpub.application.service;
 
+import com.devpub.application.dto.response.TagDTO;
+import com.devpub.application.dto.response.TagsDTO;
 import com.devpub.application.model.Tag;
 import com.devpub.application.model.TagToPost;
 import com.devpub.application.repository.TagRepository;
 import com.devpub.application.repository.TagToPostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -49,5 +53,40 @@ public class TagService {
 			tagToPost.setTagId(tag.getId());
 			tagToPostRepository.save(tagToPost);
 		}
+	}
+
+	public ResponseEntity<TagsDTO> getTags(String query) {
+		//get all tags by query
+		if (query == null) {
+			query = "";
+		}
+		query = query + "%";
+		List<Tag> tagList = tagRepository.findByNameLike(query);
+
+		//get TagDTO list (tags with no normalize weight)
+		long allPostCount = tagRepository.getAllPostCount();
+		double maxWeight = 0;
+
+		List<TagDTO> tagDTOList = new ArrayList<>();
+
+		for (Tag tag : tagList) {
+			int postCountByTag = tagToPostRepository.countById(tag.getId());
+			double weight = (double) postCountByTag / allPostCount;
+
+			TagDTO tagDTO = new TagDTO(tag.getName(), weight);
+			tagDTOList.add(tagDTO);
+			//looking max value tag weight
+			maxWeight = Math.max(maxWeight, weight);
+		}
+
+		//normalize weight
+		double normalizeCoefficient = 1 / maxWeight;
+
+		for (TagDTO tagDTO : tagDTOList) {
+			double normalizedWeight = tagDTO.getWeight() * normalizeCoefficient;
+			tagDTO.setWeight(normalizedWeight);
+		}
+		//return
+		return ResponseEntity.ok(new TagsDTO(tagDTOList));
 	}
 }

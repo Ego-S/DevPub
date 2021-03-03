@@ -7,6 +7,7 @@ import com.devpub.application.dto.response.TagDTO;
 import com.devpub.application.dto.response.TagsDTO;
 import com.devpub.application.service.CommentService;
 import com.devpub.application.service.SettingsService;
+import com.devpub.application.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,16 +24,19 @@ public class ApiGeneralController {
 
 	private final InitResponse initResponse;
 	private final SettingsService settingsService;
+	private final TagService tagService;
 	private final CommentService commentService;
 
 	@Autowired
 	public ApiGeneralController(
 			InitResponse initResponse,
 			SettingsService settingsService,
+			TagService tagService,
 			CommentService commentService
 			) {
 		this.initResponse = initResponse;
 		this.settingsService = settingsService;
+		this.tagService = tagService;
 		this.commentService = commentService;
 	}
 
@@ -55,14 +59,11 @@ public class ApiGeneralController {
 		return commentService.postComment(commentRequest, principal);
 	}
 
-	//TODO
-	//ЗАГЛУШКА
 	@GetMapping("/tag")
-	public ResponseEntity<TagsDTO> getTags() {
-		List<TagDTO> tags = new ArrayList<>();
-		tags.add(new TagDTO("Test", 1.0));
-		TagsDTO body = new TagsDTO(tags);
-		return new ResponseEntity<>(body, HttpStatus.OK);
+	public ResponseEntity<TagsDTO> getTags(
+			@RequestParam(name = "query", required = false) String query
+	) {
+		return tagService.getTags(query);
 	}
 
 }
