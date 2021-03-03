@@ -207,15 +207,7 @@ public class PostService {
 
 	public ResponseEntity<ResultDTO> postPost(PostRequest postRequest, Principal principal) {
 		User user = getUser(principal);
-
-		Map<String, String> errors = new HashMap<>();
-
-		if (postRequest.getText().length() < textMinLength) {
-			errors.put("text", TEXT_TOO_SHORT_ERROR);
-		}
-		if (postRequest.getTitle().length() < titleMinLength) {
-			errors.put("title", TITLE_TOO_SHORT_ERROR);
-		}
+		Map<String, String> errors = getErrorsByPostPublication(postRequest);
 
 		if (errors.size() != 0) {
 			return ResponseEntity.ok(new ResultDTO(false, errors));
@@ -224,22 +216,30 @@ public class PostService {
 		}
 	}
 
-	private ResultDTO postPostRequest(PostRequest postRequest, User user) {
-		Post post = new Post();
-		post.setActive(postRequest.getActive() == 1);
-		post.setModerationStatus(ModerationStatus.NEW);
-		post.setUser(user);
-		post.setPostTime(longToLocalDateTime(Math.max(System.currentTimeMillis() / 1000, postRequest.getTimestamp())));
-		post.setTitle(postRequest.getTitle());
-		post.setText(postRequest.getText());
+	public ResponseEntity<ResultDTO> putPost(int id, PostRequest postRequest, Principal principal) {
+		User user = getUser(principal);
+		Map<String, String> errors = getErrorsByPostPublication(postRequest);
 
-		postRepository.save(post);
+		if (errors.size() != 0) {
+			return ResponseEntity.ok(new ResultDTO(false, errors));
+		} else {
+			Post post = postRepository.getOne(id);
+			post.setActive(postRequest.getActive() == 1);
+			if (!user.isModerator()) {
+				post.setModerationStatus(ModerationStatus.NEW);
+			}
+			post.setPostTime(longToLocalDateTime(Math.max(System.currentTimeMillis() / 1000, postRequest.getTimestamp())));
+			post.setTitle(postRequest.getTitle());
+			post.setText(postRequest.getText());
 
-		for (String tagName : postRequest.getTags()) {
-			tagService.saveTag(tagName, post.getId());
+			postRepository.save(post);
+
+			for (String tagName : postRequest.getTags()) {
+				tagService.saveTag(tagName, post.getId());
+			}
+
+			return ResponseEntity.ok(new ResultDTO(true, null));
 		}
-
-		return new ResultDTO(true, null);
 	}
 
 	public ResponseEntity<ResultDTO> vote(int value, VoteRequest voteRequest, Principal principal) {
@@ -272,6 +272,37 @@ public class PostService {
 	}
 
 	//=================================================================================
+
+	private Map<String, String> getErrorsByPostPublication(PostRequest postRequest) {
+		Map<String, String> errors = new HashMap<>();
+
+		if (postRequest.getText().length() < textMinLength) {
+			errors.put("text", TEXT_TOO_SHORT_ERROR);
+		}
+		if (postRequest.getTitle().length() < titleMinLength) {
+			errors.put("title", TITLE_TOO_SHORT_ERROR);
+		}
+
+		return errors;
+	}
+
+	private ResultDTO postPostRequest(PostRequest postRequest, User user) {
+		Post post = new Post();
+		post.setActive(postRequest.getActive() == 1);
+		post.setModerationStatus(ModerationStatus.NEW);
+		post.setUser(user);
+		post.setPostTime(longToLocalDateTime(Math.max(System.currentTimeMillis() / 1000, postRequest.getTimestamp())));
+		post.setTitle(postRequest.getTitle());
+		post.setText(postRequest.getText());
+
+		postRepository.save(post);
+
+		for (String tagName : postRequest.getTags()) {
+			tagService.saveTag(tagName, post.getId());
+		}
+
+		return new ResultDTO(true, null);
+	}
 
 	private LocalDateTime longToLocalDateTime(long sec) {
 		return LocalDateTime.ofEpochSecond(sec, 0, ZoneOffset.UTC);

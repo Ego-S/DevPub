@@ -40,10 +40,14 @@ public class TagService {
 			tag.setName(tagName);
 			tagRepository.save(tag);
 		}
-		TagToPost tagToPost = new TagToPost();
-		tagToPost.setPostId(postId);
-		tagToPost.setTagId(tag.getId());
 
-		tagToPostRepository.save(tagToPost);
+		TagToPost tagToPost = tagToPostRepository.findByPostIdAndTagId(postId, tag.getId());
+
+		if (tagToPost == null) {
+			tagToPost = new TagToPost();
+			tagToPost.setPostId(postId);
+			tagToPost.setTagId(tag.getId());
+			tagToPostRepository.save(tagToPost);
+		}
 	}
 }

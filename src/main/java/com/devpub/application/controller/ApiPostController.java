@@ -113,4 +113,14 @@ public class ApiPostController {
 			Principal principal) {
 		return postService.vote(-1, vote, principal);
 	}
+
+	@PutMapping("/{ID}")
+	@PreAuthorize("hasAuthority('user')")
+	public ResponseEntity<ResultDTO> putPost(
+			@PathVariable(name = "ID") int id,
+			@RequestBody PostRequest post,
+			Principal principal
+	) {
+		return postService.putPost(id, post, principal);
+	}
 }
