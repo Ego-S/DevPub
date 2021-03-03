@@ -10,7 +10,6 @@ import com.devpub.application.model.User;
 import com.devpub.application.model.Vote;
 import com.devpub.application.repository.CommentRepository;
 import com.devpub.application.repository.PostRepository;
-import com.devpub.application.repository.UserRepository;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +36,7 @@ import java.util.*;
 public class PostService {
 
 	private final PostRepository postRepository;
-	private final UserRepository userRepository;
+	private final UserService userService;
 	private final CommentRepository commentRepository;
 
 	private final VoteService voteService;
@@ -56,19 +55,24 @@ public class PostService {
 	@Autowired
 	public PostService (
 			PostRepository postRepository,
-			UserRepository userRepository,
+			UserService userService,
 			CommentRepository commentRepository,
 			VoteService voteService,
 			TagService tagService) {
 		this.postRepository = postRepository;
-		this.userRepository = userRepository;
 		this.commentRepository = commentRepository;
 		this.tagService = tagService;
 		this.voteService = voteService;
+		this.userService = userService;
 	}
 
-	//=============================================================================
+	//Basic methods for request to repository======================================
 
+	public Optional<Post> findById(int id) {
+		return postRepository.findById(id);
+	}
+
+	//Methods for Controllers request==============================================
 	public PostPageDTO getPostPage(int offset, int limit, String mode) {
 		Page<Post> postPage;
 		Sort sort;
@@ -134,7 +138,7 @@ public class PostService {
 	}
 
 	public PostPageDTO myPosts(int offset, int limit, String status, Principal principal) {
-		User user = getUser(principal);
+		User user = userService.getUser(principal);
 		Page<Post> postPage;
 		Sort sort = Sort.by("postTime").descending();
 		int page = offset / limit;
@@ -159,10 +163,8 @@ public class PostService {
 		return postPageToPostPageDTO(postPage);
 	}
 
-
-
 	public PostPageDTO postsForModeration(int offset, int limit, String status, Principal principal) {
-		User moderator = getUser(principal);
+		User moderator = userService.getUser(principal);
 		Page<Post> postPage;
 		Sort sort = Sort.by("postTime").descending();
 		int page = offset / limit;
@@ -193,7 +195,7 @@ public class PostService {
 		// Who is try to see it? Should we increment viewCount?
 		User user;
 		if (principal != null) {
-			user = getUser(principal);
+			user = userService.getUser(principal);
 		} else {
 			user = null;
 		}
@@ -206,7 +208,7 @@ public class PostService {
 	}
 
 	public ResponseEntity<ResultDTO> postPost(PostRequest postRequest, Principal principal) {
-		User user = getUser(principal);
+		User user = userService.getUser(principal);
 		Map<String, String> errors = getErrorsByPostPublication(postRequest);
 
 		if (errors.size() != 0) {
@@ -217,7 +219,7 @@ public class PostService {
 	}
 
 	public ResponseEntity<ResultDTO> putPost(int id, PostRequest postRequest, Principal principal) {
-		User user = getUser(principal);
+		User user = userService.getUser(principal);
 		Map<String, String> errors = getErrorsByPostPublication(postRequest);
 
 		if (errors.size() != 0) {
@@ -244,7 +246,7 @@ public class PostService {
 
 	public ResponseEntity<ResultDTO> vote(int value, VoteRequest voteRequest, Principal principal) {
 		boolean result = true;
-		User user = getUser(principal);
+		User user = userService.getUser(principal);
 		Post post = postRepository.findById(voteRequest.getPostId()).get();
 
 		Optional<Vote> optionalVote = voteService.findByUserIdAndPostId(user, post);
@@ -271,7 +273,7 @@ public class PostService {
 		return ResponseEntity.ok(new ResultDTO(result, null));
 	}
 
-	//=================================================================================
+	//Private methods==================================================================
 
 	private Map<String, String> getErrorsByPostPublication(PostRequest postRequest) {
 		Map<String, String> errors = new HashMap<>();
@@ -306,12 +308,6 @@ public class PostService {
 
 	private LocalDateTime longToLocalDateTime(long sec) {
 		return LocalDateTime.ofEpochSecond(sec, 0, ZoneOffset.UTC);
-	}
-
-	private User getUser(Principal principal) throws UsernameNotFoundException {
-		String email = principal.getName();
-		return userRepository.findByEmail(email)
-				.orElseThrow(() -> new UsernameNotFoundException(email));
 	}
 
 	private UserForPostDTO userToUserForPostDTO(User user) {
@@ -362,7 +358,7 @@ public class PostService {
 		List<CommentDTO> commentDTOList = new ArrayList<>();
 		commentList.forEach(comment -> {
 			User user =
-					userRepository.findById(comment.getUserId())
+					userService.findById(comment.getUserId())
 							.orElseThrow(() -> new UsernameNotFoundException("Can't found author of comments with id="
 									+ comment.getId()));
 			CommentDTO commentDTO = new CommentDTO(

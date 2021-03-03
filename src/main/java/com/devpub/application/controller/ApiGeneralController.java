@@ -1,16 +1,19 @@
 package com.devpub.application.controller;
 
+import com.devpub.application.dto.request.CommentRequest;
 import com.devpub.application.dto.response.SettingsDTO;
 import com.devpub.application.dto.response.InitResponse;
 import com.devpub.application.dto.response.TagDTO;
 import com.devpub.application.dto.response.TagsDTO;
+import com.devpub.application.service.CommentService;
 import com.devpub.application.service.SettingsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,26 +23,42 @@ public class ApiGeneralController {
 
 	private final InitResponse initResponse;
 	private final SettingsService settingsService;
+	private final CommentService commentService;
 
-	public ApiGeneralController(InitResponse initResponse, SettingsService settingsService) {
+	@Autowired
+	public ApiGeneralController(
+			InitResponse initResponse,
+			SettingsService settingsService,
+			CommentService commentService
+			) {
 		this.initResponse = initResponse;
 		this.settingsService = settingsService;
+		this.commentService = commentService;
 	}
 
 	@GetMapping("/init")
-	private ResponseEntity<InitResponse> init() {
+	public ResponseEntity<InitResponse> init() {
 		return new ResponseEntity<>(initResponse, HttpStatus.OK);
 	}
 
 	@GetMapping("/settings")
-	private ResponseEntity<SettingsDTO> getGlobalSettings() {
+	public ResponseEntity<SettingsDTO> getGlobalSettings() {
 		return new ResponseEntity<>(settingsService.getSettings(), HttpStatus.OK);
+	}
+
+	@PostMapping("/comment")
+	@PreAuthorize("hasAuthority('user')")
+	public ResponseEntity<?> postComment(
+			@RequestBody CommentRequest commentRequest,
+			Principal principal
+			) {
+		return commentService.postComment(commentRequest, principal);
 	}
 
 	//TODO
 	//ЗАГЛУШКА
 	@GetMapping("/tag")
-	private ResponseEntity<TagsDTO> getTags() {
+	public ResponseEntity<TagsDTO> getTags() {
 		List<TagDTO> tags = new ArrayList<>();
 		tags.add(new TagDTO("Test", 1.0));
 		TagsDTO body = new TagsDTO(tags);

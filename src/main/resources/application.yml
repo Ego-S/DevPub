@@ -35,3 +35,6 @@ captchaImgWidth: 100
 captchaMaxLength: 6
 captchaLifeTimeInMinutes: 60
 
+#comment settings
+commentMinLength: 3
+

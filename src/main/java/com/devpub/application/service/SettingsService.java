@@ -13,7 +13,9 @@ public class SettingsService {
 	private final SettingsRepository settingsRepository;
 
 	@Autowired
-	public SettingsService(SettingsRepository settingsRepository) {
+	public SettingsService(
+			SettingsRepository settingsRepository
+	) {
 		this.settingsRepository = settingsRepository;
 	}
 
