@@ -6,9 +6,9 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class StatisticDTO {
-	private long postCount;
+	private long postsCount;
 	private long likesCount;
-	private long dislikeCount;
+	private long dislikesCount;
 	private long viewsCount;
 	private Long firstPublication;
 }

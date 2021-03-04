@@ -38,7 +38,7 @@ public class StatisticService {
 		this.userService = userService;
 	}
 
-	public ResponseEntity<StatisticDTO> getStatisticForBlog(Principal principal) {
+	public ResponseEntity<StatisticDTO> getBlogStatistic(Principal principal) {
 		//Can we show statistic to this user? Check "statistic is public" setting and moderation status
 		boolean isStatisticPublic =
 				settingsRepository.findByCode(GlobalSettingCode.STATISTICS_IS_PUBLIC)
@@ -73,9 +73,37 @@ public class StatisticService {
 				likesCount,
 				dislikeCount,
 				viewCount,
-				Timestamp.valueOf(firstPostPostTime).getTime() / 1000
+				postCount != 0 ? Timestamp.valueOf(firstPostPostTime).getTime() / 1000 : null
 		);
 
+		return ResponseEntity.ok(statistic);
+	}
+
+	public ResponseEntity<StatisticDTO> getMyStatistic(Principal principal) {
+		User user = userService.getUser(principal);
+
+		//create statistic
+		long postCount = 0;
+		long likesCount = voteRepository.countWhereValueAndUser((byte) 1, user);
+		long dislikeCount = voteRepository.countWhereValueAndUser((byte) -1, user);
+		long viewCount = 0;
+		LocalDateTime firstPostPostTime = LocalDateTime.now();
+
+		for (Post post : postRepository.findAllByUser(user)) {
+			postCount++;
+			viewCount += post.getViewCount();
+			if (post.getPostTime().isBefore(firstPostPostTime)) {
+				firstPostPostTime = post.getPostTime();
+			}
+		}
+
+		StatisticDTO statistic = new StatisticDTO(
+				postCount,
+				likesCount,
+				dislikeCount,
+				viewCount,
+				postCount != 0 ? Timestamp.valueOf(firstPostPostTime).getTime() / 1000 : null
+		);
 		return ResponseEntity.ok(statistic);
 	}
 }

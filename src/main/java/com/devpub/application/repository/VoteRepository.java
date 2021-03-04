@@ -21,4 +21,7 @@ public interface VoteRepository extends CrudRepository<Vote, Integer> {
 
 	@Query("SELECT COUNT(v) FROM Vote v WHERE v.value=:value")
 	long countWhereValue(byte value);
+
+	@Query("SELECT COUNT(v) FROM Vote v WHERE v.value=:value AND v.userId=:user")
+	long countWhereValueAndUser(byte value, User user);
 }

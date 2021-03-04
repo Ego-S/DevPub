@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -111,4 +112,6 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 	Page<Post> findAllModeratedByMe(ModerationStatus status, User moderator, Pageable pageable);
 
 	Optional<Post> findPostById(int id);
+
+	List<Post> findAllByUser(User user);
 }

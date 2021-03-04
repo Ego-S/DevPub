@@ -84,9 +84,17 @@ public class ApiGeneralController {
 	}
 
 	@GetMapping("/statistics/all")
-	public ResponseEntity<StatisticDTO> getStatisticForBlog(
+	public ResponseEntity<StatisticDTO> getBlogStatistic(
 			Principal principal
 	) {
-		return statisticService.getStatisticForBlog(principal);
+		return statisticService.getBlogStatistic(principal);
+	}
+
+	@GetMapping("/statistics/my")
+	@PreAuthorize("hasAuthority('user')")
+	public ResponseEntity<StatisticDTO> getMyStatistic(
+			Principal principal
+	) {
+		return statisticService.getMyStatistic(principal);
 	}
 }
