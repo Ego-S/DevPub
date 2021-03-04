@@ -26,11 +26,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -125,6 +123,22 @@ public class UserService {
 			return ResponseEntity.ok(new ResultDTO(false, errors));
 		}
 	}
+
+	public Optional<com.devpub.application.model.User> findByEmail(String email) {
+		return userRepository.findByEmail(email);
+	}
+
+	public Optional<com.devpub.application.model.User> findById(int userId) {
+		return userRepository.findById(userId);
+	}
+
+	public com.devpub.application.model.User getUser(Principal principal) {
+		String email = principal.getName();
+		return findByEmail(email)
+				.orElseThrow(() -> new UsernameNotFoundException(email));
+	}
+
+	//==========================================================================
 
 	private UserLoginDTO mappingUserToUserLoginDTO(com.devpub.application.model.User user) {
 		return new UserLoginDTO(

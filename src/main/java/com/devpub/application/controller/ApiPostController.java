@@ -1,6 +1,7 @@
 package com.devpub.application.controller;
 
 import com.devpub.application.dto.request.PostRequest;
+import com.devpub.application.dto.request.VoteRequest;
 import com.devpub.application.dto.response.PostDTO;
 import com.devpub.application.dto.response.ResultDTO;
 import com.devpub.application.dto.response.PostPageDTO;
@@ -95,5 +96,31 @@ public class ApiPostController {
 			Principal principal
 			) {
 		return postService.postPost(post, principal);
+	}
+
+	@PostMapping("/like")
+	@PreAuthorize("hasAuthority('user')")
+	public ResponseEntity<ResultDTO> like(
+			@RequestBody VoteRequest vote,
+			Principal principal) {
+		return postService.vote(1, vote, principal);
+	}
+
+	@PostMapping("/dislike")
+	@PreAuthorize("hasAuthority('user')")
+	public ResponseEntity<ResultDTO> dislike(
+			@RequestBody VoteRequest vote,
+			Principal principal) {
+		return postService.vote(-1, vote, principal);
+	}
+
+	@PutMapping("/{ID}")
+	@PreAuthorize("hasAuthority('user')")
+	public ResponseEntity<ResultDTO> putPost(
+			@PathVariable(name = "ID") int id,
+			@RequestBody PostRequest post,
+			Principal principal
+	) {
+		return postService.putPost(id, post, principal);
 	}
 }
