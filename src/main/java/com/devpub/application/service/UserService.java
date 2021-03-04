@@ -77,21 +77,6 @@ public class UserService {
 		}
 	}
 
-	public LogoutResponse logout(){
-		SecurityContext securityContext = SecurityContextHolder.getContext();
-		Set<GrantedAuthority> grantedAuthority = new HashSet<>();
-		grantedAuthority.add(new SimpleGrantedAuthority("ROLE_ANONYMOUS"));
-		securityContext.setAuthentication(
-				new AnonymousAuthenticationToken(
-						String.valueOf(System.currentTimeMillis()),
-						new User("anonymous", "anonymous", grantedAuthority),
-						grantedAuthority
-				)
-		);
-
-		return new LogoutResponse(true);
-	}
-
 	public LoginDTO getLoginDTO(String email) throws UsernameNotFoundException {
 		try {
 			com.devpub.application.model.User currentUser =

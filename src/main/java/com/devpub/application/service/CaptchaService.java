@@ -4,13 +4,9 @@ import com.devpub.application.dto.response.CaptchaResponse;
 import com.devpub.application.model.Captcha;
 import com.devpub.application.repository.CaptchaRepository;
 import com.github.cage.Cage;
-import com.github.cage.image.EffectConfig;
-import com.github.cage.image.Painter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,21 +18,18 @@ import java.util.Random;
 
 @Service
 public class CaptchaService {
-
-	@Value("${captchaImgWidth}")
-	private int captchaImgWidth;
-	@Value("${captchaImgHeight}")
-	private int captchaImgHeight;
 	@Value("${captchaMaxLength}")
-	private int captchaMaxLength;
+	public int captchaMaxLength;
 	@Value("${captchaLifeTimeInMinutes}")
-	private int captchaLifeTimeInMinutes;
+	public int captchaLifeTimeInMinutes;
 
 	private final CaptchaRepository captchaRepository;
 	private final String IMAGE_PREFIX = "data:image/png;base64, ";
 
 	@Autowired
 	private PasswordEncoder encoder;
+	@Autowired
+	private Cage cage;
 
 	@Autowired
 	public CaptchaService (
@@ -55,7 +48,7 @@ public class CaptchaService {
 		String code = Long.toString(Math.abs(random.nextLong()), 32);
 		code = code.substring(0, Math.min(code.length(), captchaMaxLength));
 		String secretCode = encoder.encode(code);
-		String image = Base64.getEncoder().encodeToString(cageBean().draw(code));
+		String image = Base64.getEncoder().encodeToString(cage.draw(code));
 
 		//save and delete old
 		saveCaptcha(code, secretCode);
@@ -78,29 +71,5 @@ public class CaptchaService {
 		captcha.setSecretCode(secretCode);
 		captcha.setTime(LocalDateTime.now());
 		captchaRepository.save(captcha);
-	}
-
-	@Bean
-	private Cage cageBean() {
-		return new Cage(
-				new Painter(
-						captchaImgWidth,
-						captchaImgHeight,
-						null,
-						null,
-						new EffectConfig(
-								true,
-								true,
-								false,
-								true,
-								null),
-						new Random()),
-				null,
-				null,
-				null,
-				1.0f,
-				null,
-				new Random()
-		);
 	}
 }

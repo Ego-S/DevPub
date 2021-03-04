@@ -40,9 +40,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.and()
 				.formLogin().disable()
 				.logout()
+				.logoutUrl("/api/auth/logout")
 				.deleteCookies("JSESSIONID")
 				.invalidateHttpSession(true)
-				.logoutSuccessUrl("/");
+				.logoutSuccessUrl("/api/auth/logoutSuccess");
 	}
 
 	@Bean

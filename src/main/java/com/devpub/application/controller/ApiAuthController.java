@@ -43,10 +43,9 @@ public class ApiAuthController {
 		return ResponseEntity.ok(userService.login(loginRequest));
 	}
 
-	@GetMapping("/logout")
-	@PreAuthorize("hasAuthority('user')")
+	@GetMapping("/logoutSuccess")
 	public ResponseEntity<LogoutResponse> logout() {
-		return ResponseEntity.ok(userService.logout());
+		return ResponseEntity.ok(new LogoutResponse(true));
 	}
 
 	@PostMapping("/register")
