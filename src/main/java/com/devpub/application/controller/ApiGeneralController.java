@@ -53,6 +53,14 @@ public class ApiGeneralController {
 		return new ResponseEntity<>(settingsService.getSettings(), HttpStatus.OK);
 	}
 
+	@PutMapping("/settings")
+	@PreAuthorize("hasAuthority('moderator')")
+	public ResponseEntity<ResultDTO> putGlobalSettings(
+			@RequestBody SettingsDTO settingsDTO
+	) {
+		return settingsService.putSettings(settingsDTO);
+	}
+
 	@PostMapping("/comment")
 	@PreAuthorize("hasAuthority('user')")
 	public ResponseEntity<?> postComment(
@@ -77,5 +85,4 @@ public class ApiGeneralController {
 	) {
 		return postService.postModeration(moderation, principal);
 	}
-
 }
