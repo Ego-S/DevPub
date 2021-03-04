@@ -1,16 +1,15 @@
 package com.devpub.application.controller;
 
+import com.devpub.application.dto.request.LoginRequest;
 import com.devpub.application.dto.request.RegistrationBody;
 import com.devpub.application.dto.response.CaptchaResponse;
 import com.devpub.application.dto.response.LoginDTO;
-import com.devpub.application.dto.request.LoginRequest;
 import com.devpub.application.dto.response.LogoutResponse;
 import com.devpub.application.dto.response.ResultDTO;
 import com.devpub.application.service.CaptchaService;
 import com.devpub.application.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;

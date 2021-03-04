@@ -1,9 +1,8 @@
 package com.devpub.application.controller;
 
 import com.devpub.application.dto.request.CommentRequest;
-import com.devpub.application.dto.response.SettingsDTO;
 import com.devpub.application.dto.response.InitResponse;
-import com.devpub.application.dto.response.TagDTO;
+import com.devpub.application.dto.response.SettingsDTO;
 import com.devpub.application.dto.response.TagsDTO;
 import com.devpub.application.service.CommentService;
 import com.devpub.application.service.SettingsService;
@@ -15,8 +14,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
