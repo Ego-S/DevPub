@@ -2,14 +2,8 @@ package com.devpub.application.controller;
 
 import com.devpub.application.dto.request.CommentRequest;
 import com.devpub.application.dto.request.PostModerationRequest;
-import com.devpub.application.dto.response.InitResponse;
-import com.devpub.application.dto.response.ResultDTO;
-import com.devpub.application.dto.response.SettingsDTO;
-import com.devpub.application.dto.response.TagsDTO;
-import com.devpub.application.service.CommentService;
-import com.devpub.application.service.PostService;
-import com.devpub.application.service.SettingsService;
-import com.devpub.application.service.TagService;
+import com.devpub.application.dto.response.*;
+import com.devpub.application.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +20,7 @@ public class ApiGeneralController {
 	private final SettingsService settingsService;
 	private final TagService tagService;
 	private final PostService postService;
+	private final StatisticService statisticService;
 	private final CommentService commentService;
 
 	@Autowired
@@ -34,12 +29,14 @@ public class ApiGeneralController {
 			SettingsService settingsService,
 			TagService tagService,
 			PostService postService,
+			StatisticService statisticService,
 			CommentService commentService
 			) {
 		this.initResponse = initResponse;
 		this.settingsService = settingsService;
 		this.tagService = tagService;
 		this.postService = postService;
+		this.statisticService = statisticService;
 		this.commentService = commentService;
 	}
 
@@ -84,5 +81,12 @@ public class ApiGeneralController {
 			Principal principal
 	) {
 		return postService.postModeration(moderation, principal);
+	}
+
+	@GetMapping("/statistics/all")
+	public ResponseEntity<StatisticDTO> getStatisticForBlog(
+			Principal principal
+	) {
+		return statisticService.getStatisticForBlog(principal);
 	}
 }

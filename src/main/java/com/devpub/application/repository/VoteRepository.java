@@ -18,4 +18,7 @@ public interface VoteRepository extends CrudRepository<Vote, Integer> {
 	@Modifying
 	@Query("DELETE FROM Vote v WHERE v.id=:id")
 	void deleteById(Integer id);
+
+	@Query("SELECT COUNT(v) FROM Vote v WHERE v.value=:value")
+	long countWhereValue(byte value);
 }
