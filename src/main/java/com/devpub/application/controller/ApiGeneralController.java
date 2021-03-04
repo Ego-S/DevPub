@@ -1,10 +1,13 @@
 package com.devpub.application.controller;
 
 import com.devpub.application.dto.request.CommentRequest;
+import com.devpub.application.dto.request.PostModerationRequest;
 import com.devpub.application.dto.response.InitResponse;
+import com.devpub.application.dto.response.ResultDTO;
 import com.devpub.application.dto.response.SettingsDTO;
 import com.devpub.application.dto.response.TagsDTO;
 import com.devpub.application.service.CommentService;
+import com.devpub.application.service.PostService;
 import com.devpub.application.service.SettingsService;
 import com.devpub.application.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,7 @@ public class ApiGeneralController {
 	private final InitResponse initResponse;
 	private final SettingsService settingsService;
 	private final TagService tagService;
+	private final PostService postService;
 	private final CommentService commentService;
 
 	@Autowired
@@ -29,11 +33,13 @@ public class ApiGeneralController {
 			InitResponse initResponse,
 			SettingsService settingsService,
 			TagService tagService,
+			PostService postService,
 			CommentService commentService
 			) {
 		this.initResponse = initResponse;
 		this.settingsService = settingsService;
 		this.tagService = tagService;
+		this.postService = postService;
 		this.commentService = commentService;
 	}
 
@@ -61,6 +67,15 @@ public class ApiGeneralController {
 			@RequestParam(name = "query", required = false) String query
 	) {
 		return tagService.getTags(query);
+	}
+
+	@PostMapping("/moderation")
+	@PreAuthorize("hasAuthority('moderator')")
+	public ResponseEntity<ResultDTO> postModeration(
+			@RequestBody PostModerationRequest moderation,
+			Principal principal
+	) {
+		return postService.postModeration(moderation, principal);
 	}
 
 }

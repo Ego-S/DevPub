@@ -1,5 +1,6 @@
 package com.devpub.application.service;
 
+import com.devpub.application.dto.request.PostModerationRequest;
 import com.devpub.application.dto.request.PostRequest;
 import com.devpub.application.dto.request.VoteRequest;
 import com.devpub.application.dto.response.*;
@@ -270,6 +271,34 @@ public class PostService {
 			vote.setValue((byte) value);
 			voteService.save(vote);
 		}
+		return ResponseEntity.ok(new ResultDTO(result, null));
+	}
+
+
+	public ResponseEntity<ResultDTO> postModeration(PostModerationRequest postModerationRequest, Principal principal) {
+		boolean result = true;
+		User moderator = userService.getUser(principal);
+		if (moderator.isModerator()) {
+			Post post = postRepository.getOne(postModerationRequest.getPostId());
+			if (post == null) {
+				result = false;
+			} else {
+				switch (postModerationRequest.getDecision()) {
+					case "accept" :
+						post.setModerationStatus(ModerationStatus.ACCEPTED);
+						post.setModerator(moderator);
+						break;
+					case "decline" :
+						post.setModerationStatus(ModerationStatus.DECLINED);
+						post.setModerator(moderator);
+						break;
+				}
+				postRepository.save(post);
+			}
+		} else {
+			result = false;
+		}
+
 		return ResponseEntity.ok(new ResultDTO(result, null));
 	}
 
