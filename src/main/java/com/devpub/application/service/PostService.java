@@ -1,5 +1,6 @@
 package com.devpub.application.service;
 
+import com.devpub.application.dto.exception.BadRequestException;
 import com.devpub.application.dto.request.PostModerationRequest;
 import com.devpub.application.dto.request.PostRequest;
 import com.devpub.application.dto.request.VoteRequest;
@@ -186,12 +187,9 @@ public class PostService {
 		return postPageToPostPageDTO(postPage);
 	}
 
-	public ResponseEntity<PostDTO> getPostById(int id, Principal principal) {
+	public PostDTO getPostById(int id, Principal principal) {
 		// Does it exist?
-		Post post = postRepository.findPostById(id).orElse(null);
-		if (post == null) {
-			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-		}
+		Post post = postRepository.findPostById(id).orElseThrow(BadRequestException::new);
 
 		// Who is try to see it? Should we increment viewCount?
 		User user;
@@ -205,50 +203,41 @@ public class PostService {
 			post.setViewCount(post.getViewCount() + 1);
 			postRepository.save(post);
 		}
-		return new ResponseEntity<>(postToPostDTO(post), HttpStatus.OK);
+		return postToPostDTO(post);
 	}
 
-	public ResponseEntity<ResultDTO> postPost(PostRequest postRequest, Principal principal) {
+	public ResultDTO postPost(PostRequest postRequest, Principal principal) {
 		User user = userService.getUser(principal);
 		Map<String, String> errors = getErrorsByPostPublication(postRequest);
 
 		if (errors.size() != 0) {
-			return ResponseEntity.ok(new ResultDTO(false, errors));
+			return new ResultDTO(false, errors);
 		} else {
-			return ResponseEntity.ok(postPostRequest(postRequest, user));
+			Post post = new Post();
+			return postPostRequest(postRequest, user, post, ModerationStatus.NEW );
 		}
 	}
 
-	public ResponseEntity<ResultDTO> putPost(int id, PostRequest postRequest, Principal principal) {
+	public ResultDTO putPost(int id, PostRequest postRequest, Principal principal) {
 		User user = userService.getUser(principal);
 		Map<String, String> errors = getErrorsByPostPublication(postRequest);
 
 		if (errors.size() != 0) {
-			return ResponseEntity.ok(new ResultDTO(false, errors));
+			return new ResultDTO(false, errors);
 		} else {
 			Post post = postRepository.getOne(id);
-			post.setActive(postRequest.getActive() == 1);
+			ModerationStatus postStatus = post.getModerationStatus();
 			if (!user.isModerator()) {
-				post.setModerationStatus(ModerationStatus.NEW);
+				postStatus = ModerationStatus.NEW;
 			}
-			post.setPostTime(longToLocalDateTime(Math.max(System.currentTimeMillis() / 1000, postRequest.getTimestamp())));
-			post.setTitle(postRequest.getTitle());
-			post.setText(postRequest.getText());
-
-			postRepository.save(post);
-
-			for (String tagName : postRequest.getTags()) {
-				tagService.saveTag(tagName, post.getId());
-			}
-
-			return ResponseEntity.ok(new ResultDTO(true, null));
+			return postPostRequest(postRequest, user, post, postStatus);
 		}
 	}
 
-	public ResponseEntity<ResultDTO> vote(int value, VoteRequest voteRequest, Principal principal) {
+	public ResultDTO vote(int value, VoteRequest voteRequest, Principal principal) {
 		boolean result = true;
 		User user = userService.getUser(principal);
-		Post post = postRepository.findById(voteRequest.getPostId()).get();
+		Post post = postRepository.findById(voteRequest.getPostId()).orElseThrow(BadRequestException::new);
 
 		Optional<Vote> optionalVote = voteService.findByUserIdAndPostId(user, post);
 
@@ -271,11 +260,11 @@ public class PostService {
 			vote.setValue((byte) value);
 			voteService.save(vote);
 		}
-		return ResponseEntity.ok(new ResultDTO(result, null));
+		return new ResultDTO(result, null);
 	}
 
 
-	public ResponseEntity<ResultDTO> postModeration(PostModerationRequest postModerationRequest, Principal principal) {
+	public ResultDTO postModeration(PostModerationRequest postModerationRequest, Principal principal) {
 		boolean result = true;
 		User moderator = userService.getUser(principal);
 		if (moderator.isModerator()) {
@@ -299,7 +288,7 @@ public class PostService {
 			result = false;
 		}
 
-		return ResponseEntity.ok(new ResultDTO(result, null));
+		return new ResultDTO(result, null);
 	}
 
 	//Private methods==================================================================
@@ -317,10 +306,9 @@ public class PostService {
 		return errors;
 	}
 
-	private ResultDTO postPostRequest(PostRequest postRequest, User user) {
-		Post post = new Post();
+	private ResultDTO postPostRequest(PostRequest postRequest, User user, Post post, ModerationStatus moderationStatus) {
 		post.setActive(postRequest.getActive() == 1);
-		post.setModerationStatus(ModerationStatus.NEW);
+		post.setModerationStatus(moderationStatus);
 		post.setUser(user);
 		post.setPostTime(longToLocalDateTime(Math.max(System.currentTimeMillis() / 1000, postRequest.getTimestamp())));
 		post.setTitle(postRequest.getTitle());

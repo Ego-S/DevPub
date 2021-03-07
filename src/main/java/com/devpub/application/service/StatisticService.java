@@ -1,5 +1,6 @@
 package com.devpub.application.service;
 
+import com.devpub.application.dto.exception.UnauthorizedException;
 import com.devpub.application.dto.response.StatisticDTO;
 import com.devpub.application.enums.GlobalSettingCode;
 import com.devpub.application.enums.GlobalSettingValue;
@@ -38,7 +39,7 @@ public class StatisticService {
 		this.userService = userService;
 	}
 
-	public ResponseEntity<StatisticDTO> getBlogStatistic(Principal principal) {
+	public StatisticDTO getBlogStatistic(Principal principal) {
 		//Can we show statistic to this user? Check "statistic is public" setting and moderation status
 		boolean isStatisticPublic =
 				settingsRepository.findByCode(GlobalSettingCode.STATISTICS_IS_PUBLIC)
@@ -49,7 +50,7 @@ public class StatisticService {
 			isModerator = user.isModerator();
 		}
 		if (!isStatisticPublic && !isModerator) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+			throw new UnauthorizedException();
 		}
 
 		//create statistic
@@ -68,18 +69,16 @@ public class StatisticService {
 			}
 		}
 
-		StatisticDTO statistic = new StatisticDTO(
+		return new StatisticDTO(
 				postCount,
 				likesCount,
 				dislikeCount,
 				viewCount,
 				postCount != 0 ? Timestamp.valueOf(firstPostPostTime).getTime() / 1000 : null
 		);
-
-		return ResponseEntity.ok(statistic);
 	}
 
-	public ResponseEntity<StatisticDTO> getMyStatistic(Principal principal) {
+	public StatisticDTO getMyStatistic(Principal principal) {
 		User user = userService.getUser(principal);
 
 		//create statistic
@@ -97,13 +96,12 @@ public class StatisticService {
 			}
 		}
 
-		StatisticDTO statistic = new StatisticDTO(
+		return new StatisticDTO(
 				postCount,
 				likesCount,
 				dislikeCount,
 				viewCount,
 				postCount != 0 ? Timestamp.valueOf(firstPostPostTime).getTime() / 1000 : null
 		);
-		return ResponseEntity.ok(statistic);
 	}
 }

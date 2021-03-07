@@ -39,7 +39,7 @@ public class SettingsService {
 		);
 	}
 
-	public ResponseEntity<ResultDTO> putSettings(SettingsDTO settingsDTO) {
+	public ResultDTO putSettings(SettingsDTO settingsDTO) {
 		GlobalSetting multiUserMode = settingsRepository.findByCode(GlobalSettingCode.MULTIUSER_MODE);
 		GlobalSettingValue multiUserModeValue
 				= settingsDTO.isMultiuserMode() ? GlobalSettingValue.YES : GlobalSettingValue.NO;
@@ -58,6 +58,6 @@ public class SettingsService {
 		multiUserMode.setValue(statisticIsPublicValue);
 		settingsRepository.save(statisticIsPublic);
 
-		return ResponseEntity.ok(new ResultDTO(true, null));
+		return new ResultDTO(true, null);
 	}
 }

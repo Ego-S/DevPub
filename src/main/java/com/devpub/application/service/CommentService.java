@@ -1,7 +1,8 @@
 package com.devpub.application.service;
 
+import com.devpub.application.dto.exception.BadRequestException;
 import com.devpub.application.dto.request.CommentRequest;
-import com.devpub.application.dto.response.BadRequestDTO;
+import com.devpub.application.dto.response.CommentDTO;
 import com.devpub.application.dto.response.CommentResponse;
 import com.devpub.application.dto.response.ResultDTO;
 import com.devpub.application.model.Comment;
@@ -39,39 +40,42 @@ public class CommentService {
 	}
 
 
-	public ResponseEntity<?> postComment(CommentRequest commentRequest, Principal principal) {
+	public CommentResponse postComment(CommentRequest commentRequest, Principal principal) {
 		User user = userService.getUser(principal);
 		Integer parentId = commentRequest.getParentId();
 		int postId = commentRequest.getPostId();
 
 		//check 404 errors
 		if (parentId != null) {
-			if (commentRepository.findById(parentId).isEmpty()) {
-				return ResponseEntity.badRequest().body(new BadRequestDTO("Comment not exist anymore"));
-			}
+			commentRepository.findById(parentId).orElseThrow(BadRequestException::new);
 		}
-		if (postService.findById(postId).isEmpty()) {
-			return ResponseEntity.badRequest().body(new BadRequestDTO("Post not exist anymore"));
-		}
+		postService.findById(postId).orElseThrow(BadRequestException::new);
 
 		//check comment errors
 		Map<String, String> errors = checkErrors(commentRequest);
 
 		if (errors.size() == 0) {
-			Comment comment = new Comment();
-			comment.setParentId(parentId);
-			comment.setPostId(postId);
-			comment.setUserId(user.getId());
-			comment.setText(commentRequest.getText());
-			comment.setTime(LocalDateTime.now());
+			Comment comment = commentRequestToComment(commentRequest, user, new Comment(), LocalDateTime.now());
 			commentRepository.save(comment);
-			return ResponseEntity.ok(new CommentResponse(comment.getId()));
+			return new CommentResponse(comment.getId(), null, null);
 		} else {
-			return ResponseEntity.ok(new ResultDTO(false, errors));
+			return new CommentResponse(null, false, errors);
 		}
 	}
 
 	//Private methods=============================================================
+
+	private Comment commentRequestToComment(CommentRequest commentRequest,
+											User user,
+											Comment comment,
+											LocalDateTime time) {
+		comment.setParentId(commentRequest.getParentId());
+		comment.setPostId(commentRequest.getPostId());
+		comment.setUserId(user.getId());
+		comment.setText(commentRequest.getText());
+		comment.setTime(time);
+		return comment;
+	}
 
 	private Map<String, String> checkErrors(CommentRequest commentRequest) {
 		Map<String, String> errors = new HashMap<>();

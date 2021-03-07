@@ -55,7 +55,7 @@ public class TagService {
 		}
 	}
 
-	public ResponseEntity<TagsDTO> getTags(String query) {
+	public TagsDTO getTags(String query) {
 		//get all tags by query
 		if (query == null) {
 			query = "";
@@ -70,7 +70,7 @@ public class TagService {
 		List<TagDTO> tagDTOList = new ArrayList<>();
 
 		for (Tag tag : tagList) {
-			int postCountByTag = tagToPostRepository.countById(tag.getId());
+			int postCountByTag = tagToPostRepository.countByTagId(tag.getId());
 			double weight = (double) postCountByTag / allPostCount;
 
 			TagDTO tagDTO = new TagDTO(tag.getName(), weight);
@@ -87,6 +87,6 @@ public class TagService {
 			tagDTO.setWeight(normalizedWeight);
 		}
 		//return
-		return ResponseEntity.ok(new TagsDTO(tagDTOList));
+		return new TagsDTO(tagDTOList);
 	}
 }

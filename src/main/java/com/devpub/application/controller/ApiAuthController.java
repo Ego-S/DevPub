@@ -49,13 +49,11 @@ public class ApiAuthController {
 
 	@PostMapping("/register")
 	public ResponseEntity<ResultDTO> registration(@RequestBody RegistrationBody registrationBody) {
-		return userService.registration(registrationBody);
+		return ResponseEntity.ok(userService.registration(registrationBody));
 	}
 
 	@GetMapping("/captcha")
 	public ResponseEntity<CaptchaResponse> captcha() {
-		return captchaService.captcha();
+		return ResponseEntity.ok(captchaService.captcha());
 	}
-
-
 }

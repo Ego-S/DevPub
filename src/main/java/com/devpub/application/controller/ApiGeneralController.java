@@ -55,23 +55,23 @@ public class ApiGeneralController {
 	public ResponseEntity<ResultDTO> putGlobalSettings(
 			@RequestBody SettingsDTO settingsDTO
 	) {
-		return settingsService.putSettings(settingsDTO);
+		return ResponseEntity.ok(settingsService.putSettings(settingsDTO));
 	}
 
 	@PostMapping("/comment")
 	@PreAuthorize("hasAuthority('user')")
-	public ResponseEntity<?> postComment(
+	public ResponseEntity<CommentResponse> postComment(
 			@RequestBody CommentRequest commentRequest,
 			Principal principal
 			) {
-		return commentService.postComment(commentRequest, principal);
+		return ResponseEntity.ok(commentService.postComment(commentRequest, principal));
 	}
 
 	@GetMapping("/tag")
 	public ResponseEntity<TagsDTO> getTags(
 			@RequestParam(name = "query", required = false) String query
 	) {
-		return tagService.getTags(query);
+		return ResponseEntity.ok(tagService.getTags(query));
 	}
 
 	@PostMapping("/moderation")
@@ -80,14 +80,14 @@ public class ApiGeneralController {
 			@RequestBody PostModerationRequest moderation,
 			Principal principal
 	) {
-		return postService.postModeration(moderation, principal);
+		return ResponseEntity.ok(postService.postModeration(moderation, principal));
 	}
 
 	@GetMapping("/statistics/all")
 	public ResponseEntity<StatisticDTO> getBlogStatistic(
 			Principal principal
 	) {
-		return statisticService.getBlogStatistic(principal);
+		return ResponseEntity.ok(statisticService.getBlogStatistic(principal));
 	}
 
 	@GetMapping("/statistics/my")
@@ -95,6 +95,6 @@ public class ApiGeneralController {
 	public ResponseEntity<StatisticDTO> getMyStatistic(
 			Principal principal
 	) {
-		return statisticService.getMyStatistic(principal);
+		return ResponseEntity.ok(statisticService.getMyStatistic(principal));
 	}
 }

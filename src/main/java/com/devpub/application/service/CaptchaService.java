@@ -42,7 +42,7 @@ public class CaptchaService {
 		return captchaRepository.findByCodeAndSecretCode(code, secretCode);
 	}
 
-	public ResponseEntity<CaptchaResponse> captcha() {
+	public CaptchaResponse captcha() {
 		//generate captcha code, secret code and image
 		Random random = new Random();
 		String code = Long.toString(Math.abs(random.nextLong()), 32);
@@ -55,8 +55,7 @@ public class CaptchaService {
 		deleteOldCaptcha();
 
 		//return
-		CaptchaResponse captchaResponse = new CaptchaResponse(secretCode, IMAGE_PREFIX + image);
-		return ResponseEntity.ok(captchaResponse);
+		return new CaptchaResponse(secretCode, IMAGE_PREFIX + image);
 	}
 
 	private void deleteOldCaptcha() {

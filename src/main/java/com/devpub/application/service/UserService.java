@@ -86,7 +86,7 @@ public class UserService {
 		}
 	}
 
-	public ResponseEntity<ResultDTO> registration(RegistrationBody registrationBody) {
+	public ResultDTO registration(RegistrationBody registrationBody) {
 		Map<String, String> errors = new HashMap<>();
 
 		if (userRepository.findByEmail(registrationBody.getEmail()).isPresent()) {
@@ -115,9 +115,9 @@ public class UserService {
 			user.setEmail(registrationBody.getEmail());
 			user.setRegistrationTime(LocalDateTime.now());
 			userRepository.save(user);
-			return ResponseEntity.ok(new ResultDTO(true, null));
+			return new ResultDTO(true, null);
 		} else {
-			return ResponseEntity.ok(new ResultDTO(false, errors));
+			return new ResultDTO(false, errors);
 		}
 	}
 

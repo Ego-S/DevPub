@@ -10,5 +10,5 @@ public interface TagToPostRepository extends CrudRepository<TagToPost, Integer> 
 	TagToPost findByPostIdAndTagId(int postId, int id);
 
 	@Query("SELECT COUNT(ttp) FROM TagToPost ttp WHERE ttp.tagId=:tagId")
-	int countById(Integer tagId);
+	int countByTagId(Integer tagId);
 }

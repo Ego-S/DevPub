@@ -86,7 +86,7 @@ public class ApiPostController {
 			@PathVariable("ID") int id,
 			Principal principal
 	) {
-		return postService.getPostById(id, principal);
+		return ResponseEntity.ok(postService.getPostById(id, principal));
 	}
 
 	@PostMapping()
@@ -95,7 +95,7 @@ public class ApiPostController {
 			@RequestBody PostRequest post,
 			Principal principal
 			) {
-		return postService.postPost(post, principal);
+		return ResponseEntity.ok(postService.postPost(post, principal));
 	}
 
 	@PostMapping("/like")
@@ -103,7 +103,7 @@ public class ApiPostController {
 	public ResponseEntity<ResultDTO> like(
 			@RequestBody VoteRequest vote,
 			Principal principal) {
-		return postService.vote(1, vote, principal);
+		return ResponseEntity.ok(postService.vote(1, vote, principal));
 	}
 
 	@PostMapping("/dislike")
@@ -111,7 +111,7 @@ public class ApiPostController {
 	public ResponseEntity<ResultDTO> dislike(
 			@RequestBody VoteRequest vote,
 			Principal principal) {
-		return postService.vote(-1, vote, principal);
+		return ResponseEntity.ok(postService.vote(-1, vote, principal));
 	}
 
 	@PutMapping("/{ID}")
@@ -121,6 +121,6 @@ public class ApiPostController {
 			@RequestBody PostRequest post,
 			Principal principal
 	) {
-		return postService.putPost(id, post, principal);
+		return ResponseEntity.ok(postService.putPost(id, post, principal));
 	}
 }
