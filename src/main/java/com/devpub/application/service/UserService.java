@@ -2,6 +2,7 @@ package com.devpub.application.service;
 
 import com.devpub.application.dto.request.LoginRequest;
 import com.devpub.application.dto.request.RegistrationBody;
+import com.devpub.application.dto.request.UserEmailRequest;
 import com.devpub.application.dto.response.LoginDTO;
 import com.devpub.application.dto.response.ResultDTO;
 import com.devpub.application.dto.response.UserLoginDTO;
@@ -10,7 +11,6 @@ import com.devpub.application.repository.PostRepository;
 import com.devpub.application.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,6 +21,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.mail.MessagingException;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final PostRepository postRepository;
 	private final AuthenticationManager authenticationManager;
+	private final SendEmailService sendEmailService;
 	private final CaptchaService captchaService;
 
 	private final String USER_ALREADY_EXIST_ERROR = "User with this email already exist";
@@ -51,10 +53,12 @@ public class UserService {
 	@Autowired
 	public UserService(UserRepository userRepository,
 					   PostRepository postRepository,
+					   SendEmailService sendEmailService,
 					   CaptchaService captchaService,
 					   AuthenticationManager authenticationManager) {
 		this.userRepository = userRepository;
 		this.postRepository = postRepository;
+		this.sendEmailService = sendEmailService;
 		this.captchaService = captchaService;
 		this.authenticationManager = authenticationManager;
 	}
@@ -134,6 +138,31 @@ public class UserService {
 		return findByEmail(email)
 				.orElseThrow(() -> new UsernameNotFoundException(email));
 	}
+
+	public ResultDTO restore(UserEmailRequest userEmailRequest) {
+		String email = userEmailRequest.getEmail();
+		Optional<com.devpub.application.model.User> optionalUser = userRepository.findByEmail(email);
+		if (optionalUser.isEmpty()) {
+			return new ResultDTO(false, null);
+		}
+
+		com.devpub.application.model.User user = optionalUser.get();
+		String hash = passwordEncoder
+				.encode(Long.toString(System.currentTimeMillis()))
+				.replaceAll("\\W", "")
+				.toLowerCase();
+		user.setCode(hash);
+		userRepository.save(user);
+
+		try {
+			sendEmailService.sendPasswordRecoveryEmail(email, user.getName(), hash);
+			return new ResultDTO(true, null);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResultDTO(false, null);
+		}
+	}
+
 
 	//==========================================================================
 

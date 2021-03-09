@@ -1,11 +1,27 @@
-spring.datasource.url: jdbc:mysql://localhost:3306/pubdev?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=utf8
-spring.datasource.username: root
-spring.datasource.password: ${MYSQL_PASSWORD}
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/pubdev?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=utf8
+    username: root
+    password: ${MYSQL_PASSWORD}
+    sqlScriptEncoding: utf8
 
-spring.jpa.hibernate.ddl-auto: none
-spring.datasource.sqlScriptEncoding: utf8
-spring.liquibase.enabled: true
-spring.liquibase.change-log: classpath:db/changelog/db.changelog-master.xml
+  jpa.hibernate.ddl-auto: none
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+
+  mail:
+    protocol: smtp
+    host: smtp.gmail.com
+    port: 587
+    username: sizenko.egor@gmail.com
+    password: ${GMAIL_APP_PASSWORD}
+    properties:
+      mail.smtp:
+        auth: true
+        starttls.enable: true
+
 
 #parameters for blog init
 title: DevPub
@@ -38,3 +54,6 @@ captchaLifeTimeInMinutes: 60
 #comment settings
 commentMinLength: 3
 
+#
+rootPage: localhost:8080
+loginChangeSuffix: /login/change-password/

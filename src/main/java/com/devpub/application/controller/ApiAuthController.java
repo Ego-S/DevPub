@@ -2,6 +2,7 @@ package com.devpub.application.controller;
 
 import com.devpub.application.dto.request.LoginRequest;
 import com.devpub.application.dto.request.RegistrationBody;
+import com.devpub.application.dto.request.UserEmailRequest;
 import com.devpub.application.dto.response.CaptchaResponse;
 import com.devpub.application.dto.response.LoginDTO;
 import com.devpub.application.dto.response.LogoutResponse;
@@ -55,5 +56,10 @@ public class ApiAuthController {
 	@GetMapping("/captcha")
 	public ResponseEntity<CaptchaResponse> captcha() {
 		return ResponseEntity.ok(captchaService.captcha());
+	}
+
+	@PostMapping("/restore")
+	public ResponseEntity<ResultDTO> restore(@RequestBody UserEmailRequest userEmailBody) {
+		return ResponseEntity.ok(userService.restore(userEmailBody));
 	}
 }
