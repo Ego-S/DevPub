@@ -20,8 +20,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -289,6 +287,33 @@ public class PostService {
 		}
 
 		return new ResultDTO(result, null);
+	}
+
+
+	public CalendarDTO getCalendar(Integer year) {
+		//if request param "year" is empty, get calendar for current year
+		if (year == null) {
+			year = LocalDate.now().getYear();
+		}
+
+		//init set and map for response entity
+		TreeSet<Integer> years = new TreeSet<>();
+		TreeMap<LocalDate, Integer> dateToPostCount = new TreeMap<>();
+
+		//fill set and map
+		for (Post post : postRepository
+				.findAllByStatusAndIsActiveBefore(ModerationStatus.ACCEPTED, true, LocalDateTime.now())) {
+			LocalDateTime postTime = post.getPostTime();
+			//add year to yearsSet
+			years.add(postTime.getYear());
+
+			if (postTime.getYear() == year) {
+				LocalDate postDate = postTime.toLocalDate();
+				dateToPostCount.merge(postDate, 1, Integer::sum);
+			}
+		}
+
+		return new CalendarDTO(years, dateToPostCount);
 	}
 
 	//Private methods==================================================================

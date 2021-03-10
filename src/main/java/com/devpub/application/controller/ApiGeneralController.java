@@ -97,4 +97,9 @@ public class ApiGeneralController {
 	) {
 		return ResponseEntity.ok(statisticService.getMyStatistic(principal));
 	}
+
+	@GetMapping("/calendar")
+	public ResponseEntity<CalendarDTO> calendar(@RequestParam(name = "year", required = false) Integer year) {
+		return ResponseEntity.ok(postService.getCalendar(year));
+	}
 }

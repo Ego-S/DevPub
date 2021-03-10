@@ -114,4 +114,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 	Optional<Post> findPostById(int id);
 
 	List<Post> findAllByUser(User user);
+
+	@Query("FROM Post p WHERE p.moderationStatus=:status AND p.isActive=:isActive AND p.postTime<=:time")
+	List<Post> findAllByStatusAndIsActiveBefore(ModerationStatus status, boolean isActive,LocalDateTime time);
 }
