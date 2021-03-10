@@ -1,5 +1,6 @@
 package com.devpub.application.service;
 
+import com.devpub.application.dto.request.ChangePasswordRequest;
 import com.devpub.application.dto.request.LoginRequest;
 import com.devpub.application.dto.request.RegistrationBody;
 import com.devpub.application.dto.request.UserEmailRequest;
@@ -102,13 +103,11 @@ public class UserService {
 			errors.put("name", USERNAME_IS_INVALID_ERROR);
 		}
 
-		if (registrationBody.getPassword().length() < passwordMinLength) {
+		if (!isPasswordValid(registrationBody.getPassword())) {
 			errors.put("password", PASSWORD_TO_SHORT_ERROR);
 		}
 
-		if (captchaService
-				.findCaptchaByCodeAndSecretCode(registrationBody.getCaptcha(), registrationBody.getCaptchaSecret())
-				.isEmpty()) {
+		if (!isCaptchaValid(registrationBody.getCaptcha(), registrationBody.getCaptchaSecret())) {
 			errors.put("captcha", CAPTCHA_ERROR);
 		}
 
@@ -163,6 +162,34 @@ public class UserService {
 		}
 	}
 
+	public ResultDTO changePassword(ChangePasswordRequest request) {
+		Map<String, String> errors = new HashMap<>();
+		com.devpub.application.model.User user = userRepository.findByCode(request.getCode()).orElse(null);
+
+		//check the code
+		if (user == null) {
+			errors.put("code", "Ссылка для восстановления пароля устарела.\n <a href=\"/auth/restore\">Запросить " +
+					"ссылку снова</a>");
+		}
+
+		//check the password
+		if (!isPasswordValid(request.getPassword())) {
+			errors.put("password", PASSWORD_TO_SHORT_ERROR);
+		}
+
+		//check the captcha
+		if (!isCaptchaValid(request.getCaptcha(), request.getCaptchaSecret())) {
+			errors.put("captcha", CAPTCHA_ERROR);
+		}
+
+		if (errors.isEmpty()) {
+			user.setPassword(passwordEncoder.encode(request.getPassword()));
+			userRepository.save(user);
+			return new ResultDTO(true, null);
+		} else {
+			return new ResultDTO(false, errors);
+		}
+	}
 
 	//==========================================================================
 
@@ -176,5 +203,13 @@ public class UserService {
 				user.isModerator() ? postRepository.countByStatus(ModerationStatus.NEW) : 0,
 				user.isModerator()
 		);
+	}
+
+	private boolean isPasswordValid(String password) {
+		return password.length() >= passwordMinLength;
+	}
+
+	private boolean isCaptchaValid(String captcha, String captchaSecret) {
+		return captchaService.findCaptchaByCodeAndSecretCode(captcha, captchaSecret).isPresent();
 	}
 }

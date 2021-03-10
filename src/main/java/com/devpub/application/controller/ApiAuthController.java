@@ -1,5 +1,6 @@
 package com.devpub.application.controller;
 
+import com.devpub.application.dto.request.ChangePasswordRequest;
 import com.devpub.application.dto.request.LoginRequest;
 import com.devpub.application.dto.request.RegistrationBody;
 import com.devpub.application.dto.request.UserEmailRequest;
@@ -61,5 +62,10 @@ public class ApiAuthController {
 	@PostMapping("/restore")
 	public ResponseEntity<ResultDTO> restore(@RequestBody UserEmailRequest userEmailBody) {
 		return ResponseEntity.ok(userService.restore(userEmailBody));
+	}
+
+	@PostMapping("/password")
+	public ResponseEntity<ResultDTO> changePassword(@RequestBody ChangePasswordRequest request) {
+		return ResponseEntity.ok(userService.changePassword(request));
 	}
 }
