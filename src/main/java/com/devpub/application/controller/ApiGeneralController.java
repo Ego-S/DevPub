@@ -6,9 +6,11 @@ import com.devpub.application.dto.response.*;
 import com.devpub.application.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 
@@ -21,6 +23,7 @@ public class ApiGeneralController {
 	private final TagService tagService;
 	private final PostService postService;
 	private final StatisticService statisticService;
+	private final UploadService uploadService;
 	private final CommentService commentService;
 
 	@Autowired
@@ -30,6 +33,7 @@ public class ApiGeneralController {
 			TagService tagService,
 			PostService postService,
 			StatisticService statisticService,
+			UploadService uploadService,
 			CommentService commentService
 			) {
 		this.initResponse = initResponse;
@@ -37,6 +41,7 @@ public class ApiGeneralController {
 		this.tagService = tagService;
 		this.postService = postService;
 		this.statisticService = statisticService;
+		this.uploadService = uploadService;
 		this.commentService = commentService;
 	}
 
@@ -101,5 +106,11 @@ public class ApiGeneralController {
 	@GetMapping("/calendar")
 	public ResponseEntity<CalendarDTO> calendar(@RequestParam(name = "year", required = false) Integer year) {
 		return ResponseEntity.ok(postService.getCalendar(year));
+	}
+
+	@PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PreAuthorize("hasAuthority('user')")
+	public ResponseEntity<?> postImage(@RequestParam("image") MultipartFile file) {
+		return uploadService.uploadImage(file);
 	}
 }
