@@ -28,8 +28,6 @@ spring:
     enabled: true
 
 #upload parameters
-spring.mvc.static-locations: classpath:/tmp/images, classpath:resources
-staticContentDir: tmp/images
 uploadDir: upload
 maxFileSizeInBytes: 10485760
 avatarHeight: 36

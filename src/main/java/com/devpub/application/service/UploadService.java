@@ -22,8 +22,6 @@ import java.util.Objects;
 @Service
 public class UploadService {
 
-	@Value("${staticContentDir}")
-	private String staticFolder;
 	@Value("${uploadDir}")
 	private String uploadDir;
 	@Value("${maxFileSizeInBytes}")
@@ -91,11 +89,11 @@ public class UploadService {
 		String folder = path.toString().substring(0, path.toString().lastIndexOf(File.separator));
 		String formatName = getFormatName(path);
 
-		File dir = new File(staticFolder + File.separator + folder);
+		File dir = new File(folder);
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
-		File newFile = new File( staticFolder + File.separator + path.toString());
+		File newFile = new File(path.toString());
 		ImageIO.write(image, formatName, newFile);
 		image.flush();
 
