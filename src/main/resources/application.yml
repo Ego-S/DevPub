@@ -23,13 +23,17 @@ spring:
         starttls.enable: true
 
   servlet.multipart:
-    max-file-size: 5GB
-    max-request-size: 5GB
+    max-file-size: 50MB
+    max-request-size: 50MB
     enabled: true
 
 #upload parameters
+spring.mvc.static-locations: classpath:/tmp/images, classpath:resources
+staticContentDir: tmp/images
 uploadDir: upload
 maxFileSizeInBytes: 10485760
+avatarHeight: 36
+avatarWidth: 36
 
 #parameters for blog init
 title: DevPub

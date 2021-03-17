@@ -21,6 +21,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -30,11 +31,11 @@ import java.util.Optional;
 
 @Service
 public class UserService {
-
 	private final UserRepository userRepository;
 	private final PostRepository postRepository;
 	private final AuthenticationManager authenticationManager;
 	private final SendEmailService sendEmailService;
+	private final UploadService uploadService;
 	private final CaptchaService captchaService;
 
 	private final String USER_ALREADY_EXIST_ERROR = "User with this email already exist";
@@ -55,11 +56,13 @@ public class UserService {
 					   PostRepository postRepository,
 					   SendEmailService sendEmailService,
 					   CaptchaService captchaService,
+					   UploadService uploadService,
 					   AuthenticationManager authenticationManager) {
 		this.userRepository = userRepository;
 		this.postRepository = postRepository;
 		this.sendEmailService = sendEmailService;
 		this.captchaService = captchaService;
+		this.uploadService = uploadService;
 		this.authenticationManager = authenticationManager;
 	}
 
@@ -190,6 +193,63 @@ public class UserService {
 		}
 	}
 
+
+	public ResultDTO profileRedaction(
+			MultipartFile photo,
+			String name,
+			String email,
+			String password,
+			Boolean removePhoto,
+			Principal principal
+	) {
+		Map<String, String> errors = new HashMap<>();
+		com.devpub.application.model.User user = getUser(principal);
+
+		//change name
+		user.setName(name);
+
+		//change email if it differs from authorized users email
+		if (!user.getEmail().toLowerCase().equals(email.toLowerCase())) {
+			if (userRepository.findByEmail(email).isPresent()) {
+				errors.put("email", USER_ALREADY_EXIST_ERROR);
+			} else {
+				user.setEmail(email);
+			}
+		}
+
+		//change password if we have to
+		if (password != null) {
+			if (isPasswordValid(password)) {
+				user.setPassword(passwordEncoder.encode(password));
+			} else {
+				errors.put("password", PASSWORD_TO_SHORT_ERROR);
+			}
+		}
+
+		//save photo
+		if (photo != null) {
+			Map<String, String> photoErrors = uploadService.checkErrors(photo);
+			if (!photoErrors.isEmpty()) {
+				errors.putAll(photoErrors);
+			} else {
+				user.setPhotoPath(uploadService.saveAvatar(photo));
+			}
+		}
+
+		//remove photo
+		if (removePhoto) {
+			user.setPhotoPath("");
+		}
+
+		//build method response
+		if (errors.isEmpty()) {
+			userRepository.save(user);
+			return new ResultDTO(true, null);
+		} else {
+			return new ResultDTO(false, errors);
+		}
+	}
+
 	//==========================================================================
 
 	private UserLoginDTO mappingUserToUserLoginDTO(com.devpub.application.model.User user) {
@@ -211,4 +271,5 @@ public class UserService {
 	private boolean isCaptchaValid(String captcha, String captchaSecret) {
 		return captchaService.findCaptchaByCodeAndSecretCode(captcha, captchaSecret).isPresent();
 	}
+
 }

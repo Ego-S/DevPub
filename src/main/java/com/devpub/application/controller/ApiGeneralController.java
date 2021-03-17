@@ -2,6 +2,7 @@ package com.devpub.application.controller;
 
 import com.devpub.application.dto.request.CommentRequest;
 import com.devpub.application.dto.request.PostModerationRequest;
+import com.devpub.application.dto.request.ProfileRedactionRequest;
 import com.devpub.application.dto.response.*;
 import com.devpub.application.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ public class ApiGeneralController {
 	private final PostService postService;
 	private final StatisticService statisticService;
 	private final UploadService uploadService;
+	private final UserService userService;
 	private final CommentService commentService;
 
 	@Autowired
@@ -34,6 +36,7 @@ public class ApiGeneralController {
 			PostService postService,
 			StatisticService statisticService,
 			UploadService uploadService,
+			UserService userService,
 			CommentService commentService
 			) {
 		this.initResponse = initResponse;
@@ -42,6 +45,7 @@ public class ApiGeneralController {
 		this.postService = postService;
 		this.statisticService = statisticService;
 		this.uploadService = uploadService;
+		this.userService = userService;
 		this.commentService = commentService;
 	}
 
@@ -112,5 +116,33 @@ public class ApiGeneralController {
 	@PreAuthorize("hasAuthority('user')")
 	public ResponseEntity<?> postImage(@RequestParam("image") MultipartFile file) {
 		return uploadService.uploadImage(file);
+	}
+
+	@PostMapping(value = "/profile/my",
+			consumes = {MediaType.APPLICATION_JSON_VALUE})
+	@PreAuthorize("hasAuthority('user')")
+	public ResponseEntity<ResultDTO> profileRedactionWithoutPhoto(
+			@RequestBody ProfileRedactionRequest body,
+			Principal principal
+	) {
+		return ResponseEntity.ok(userService.profileRedaction(
+				null, body.getName(), body.getEmail(), body.getPassword(), body.getRemovePhoto(), principal));
+	}
+
+	@PostMapping(value = "/profile/my",
+			consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+	@PreAuthorize("hasAuthority('user')")
+	public ResponseEntity<?> profileRedactionWithPhoto(
+			@RequestPart(name = "photo", required = false) MultipartFile photo,
+			@RequestPart(name = "removePhoto", required = false) String removePhoto,
+			@RequestPart(name = "name", required = false) String name,
+			@RequestPart(name = "email", required = false) String email,
+			@RequestPart(name = "password", required = false) String password,
+			Principal principal
+	) {
+		Boolean remove = removePhoto != null ? removePhoto.equals("1") : null;
+		return ResponseEntity.ok(userService.profileRedaction(
+				photo, name, email, password, remove, principal
+		));
 	}
 }
