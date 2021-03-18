@@ -1,0 +1,2 @@
+DELETE FROM users WHERE reg_time='2020-01-01 12:00:00'
+GO

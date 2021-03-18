@@ -240,7 +240,7 @@ public class UserService {
 		}
 
 		//remove photo
-		if (removePhoto) {
+		if (removePhoto != null && removePhoto) {
 			uploadService.deleteFile(user.getPhotoPath());
 			user.setPhotoPath("");
 		}

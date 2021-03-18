@@ -20,10 +20,10 @@
         <tagDatabase tag="schema-and-global-settings-added"/>
     </changeSet>
 
-    <include file="db/changelog/v1.0/add-test-data.xml"/>
+    <include file="db/changelog/v1.0/add-start-data.xml"/>
 
     <changeSet id="30" author="Ego-S">
-        <tagDatabase tag="test-data-added"/>
+        <tagDatabase tag="start-data-added"/>
     </changeSet>
 
 </databaseChangeLog>

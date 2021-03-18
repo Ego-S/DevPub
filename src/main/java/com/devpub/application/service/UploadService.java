@@ -114,7 +114,7 @@ public class UploadService {
 	}
 
 	public void deleteFile(String path) {
-		if (!path.equals("") && path != null && path.contains(".") && path.contains(File.separator)) {
+		if (path != null && !path.equals("") && path.contains(".") && path.contains(File.separator)) {
 			String thirdFolderPath = path.substring(0, path.lastIndexOf(File.separator));
 			String secondFolderPath = thirdFolderPath.substring(0, thirdFolderPath.lastIndexOf(File.separator));
 			String firstFolderPath = secondFolderPath.substring(0, secondFolderPath.lastIndexOf(File.separator));

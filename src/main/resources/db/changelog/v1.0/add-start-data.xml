@@ -12,7 +12,7 @@
                  relativeToChangelogFile="true"
                  splitStatements="true"
                  stripComments="true"
-                 path="01-add-test-data.sql"/>
+                 path="01-add-start-data.sql"/>
         <rollback>
             <sqlFile dbms="mysql"
                      encoding="utf8"
@@ -20,7 +20,7 @@
                      relativeToChangelogFile="true"
                      splitStatements="true"
                      stripComments="true"
-                     path="01-clear-test-data.sql"/>
+                     path="01-clear-start-data.sql"/>
         </rollback>
     </changeSet>
 

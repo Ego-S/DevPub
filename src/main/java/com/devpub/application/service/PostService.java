@@ -359,7 +359,12 @@ public class PostService {
 
 	private String getAnnounceFromText(String text) {
 		String clearText = text.replaceAll("(<\\S+>)", "");
-		return clearText.substring(0, Math.min(clearText.length(), announceLength));
+		int length = Math.min(clearText.length(), announceLength);
+		String announce = clearText.substring(0, length);
+		if (length < clearText.length()) {
+			announce = announce + "...";
+		}
+		return announce;
 	}
 
 	private PostPageDTO postPageToPostPageDTO(Page<Post> postPage) {
