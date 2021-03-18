@@ -82,7 +82,8 @@ public class PostService {
 		switch(mode) {
 			case "best" :
 				pageable = PageRequest.of(page, limit);
-				postPage = postRepository.findAllBestAcceptedPostsBefore(true, ModerationStatus.ACCEPTED.toString(), LocalDateTime.now() ,pageable);
+				postPage = postRepository.findAllBestAcceptedPostsBefore(true, ModerationStatus.ACCEPTED.toString(),
+						LocalDateTime.now() ,pageable);
 				return postPageToPostPageDTO(postPage);
 			case "popular" :
 				sort = JpaSort.unsafe(Sort.Direction.DESC, "size(p.comments)");
@@ -95,7 +96,7 @@ public class PostService {
 				break;
 		}
 		pageable = PageRequest.of(page, limit, sort);
-		postPage = postRepository.findAll(true, ModerationStatus.ACCEPTED,LocalDateTime.now() ,pageable);
+		postPage = postRepository.findAll(true, ModerationStatus.ACCEPTED, LocalDateTime.now() ,pageable);
 
 		return postPageToPostPageDTO(postPage);
 	}
