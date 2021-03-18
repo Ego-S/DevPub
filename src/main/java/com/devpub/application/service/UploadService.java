@@ -113,6 +113,34 @@ public class UploadService {
 		return errors;
 	}
 
+	public void deleteFile(String path) {
+		if (!path.equals("") && path != null && path.contains(".") && path.contains(File.separator)) {
+			String thirdFolderPath = path.substring(0, path.lastIndexOf(File.separator));
+			String secondFolderPath = thirdFolderPath.substring(0, thirdFolderPath.lastIndexOf(File.separator));
+			String firstFolderPath = secondFolderPath.substring(0, secondFolderPath.lastIndexOf(File.separator));
+
+			File file = new File(path);
+			if (file.exists()) {
+				file.delete();
+			}
+
+			File thirdFolder = new File(thirdFolderPath);
+			if (Objects.requireNonNull(thirdFolder.list()).length == 0) {
+				thirdFolder.delete();
+			}
+
+			File secondFolder = new File(secondFolderPath);
+			if (Objects.requireNonNull(secondFolder.list()).length == 0) {
+				secondFolder.delete();
+			}
+
+			File firstFolder = new File(firstFolderPath);
+			if (Objects.requireNonNull(firstFolder.list()).length == 0) {
+				firstFolder.delete();
+			}
+		}
+	}
+
 	private Path getUploadPath(MultipartFile file) {
 		int hashCode = file.hashCode();
 		StringBuilder stringBuilder = new StringBuilder(String.valueOf(hashCode));

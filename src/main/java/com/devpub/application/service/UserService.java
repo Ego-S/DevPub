@@ -232,12 +232,16 @@ public class UserService {
 			if (!photoErrors.isEmpty()) {
 				errors.putAll(photoErrors);
 			} else {
+				//delete old file
+				uploadService.deleteFile(user.getPhotoPath());
+				//save new file
 				user.setPhotoPath(uploadService.saveAvatar(photo));
 			}
 		}
 
 		//remove photo
 		if (removePhoto) {
+			uploadService.deleteFile(user.getPhotoPath());
 			user.setPhotoPath("");
 		}
 
