@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Optional;
@@ -60,7 +61,8 @@ public class CaptchaService {
 
 	private void deleteOldCaptcha() {
 		captchaRepository.deleteAll(new ArrayList<>(
-				captchaRepository.findByTimeLessThen(LocalDateTime.now().minusMinutes(captchaLifeTimeInMinutes))
+				captchaRepository.findByTimeLessThen(LocalDateTime.now(ZoneId.of("UTC"))
+						.minusMinutes(captchaLifeTimeInMinutes))
 		));
 	}
 
@@ -68,7 +70,7 @@ public class CaptchaService {
 		Captcha captcha = new Captcha();
 		captcha.setCode(code);
 		captcha.setSecretCode(secretCode);
-		captcha.setTime(LocalDateTime.now());
+		captcha.setTime(LocalDateTime.now(ZoneId.of("UTC")));
 		captchaRepository.save(captcha);
 	}
 }

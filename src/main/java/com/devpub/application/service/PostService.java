@@ -25,10 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.*;
 
 @Data
@@ -83,8 +80,8 @@ public class PostService {
 			case "best" :
 				pageable = PageRequest.of(page, limit);
 				postPage = postRepository.findAllBestAcceptedPostsBefore(true, ModerationStatus.ACCEPTED.toString(),
-						LocalDateTime.now() ,pageable);
-				return postPageToPostPageDTO(postPage);
+						LocalDateTime.now(ZoneId.of("UTC")) ,pageable);
+				return mappingPostPageToPostPageDTO(postPage);
 			case "popular" :
 				sort = JpaSort.unsafe(Sort.Direction.DESC, "size(p.comments)");
 				break;
@@ -96,9 +93,10 @@ public class PostService {
 				break;
 		}
 		pageable = PageRequest.of(page, limit, sort);
-		postPage = postRepository.findAll(true, ModerationStatus.ACCEPTED, LocalDateTime.now() ,pageable);
+		postPage = postRepository
+				.findAll(true, ModerationStatus.ACCEPTED, LocalDateTime.now(ZoneId.of("UTC")) ,pageable);
 
-		return postPageToPostPageDTO(postPage);
+		return mappingPostPageToPostPageDTO(postPage);
 	}
 
 	public PostPageDTO getPostsPageLike(int offset, int limit, String query) {
@@ -107,13 +105,16 @@ public class PostService {
 		Pageable pageable = PageRequest.of(pageNumber, limit);
 
 		if (query.length() == 0) {
-			page = postRepository.findAll(true, ModerationStatus.ACCEPTED, LocalDateTime.now(), pageable);
+			page = postRepository
+					.findAll(true, ModerationStatus.ACCEPTED, LocalDateTime.now(ZoneId.of("UTC")), pageable);
 		} else {
 			query = "%" + query + "%";
-			page = postRepository.search(true, ModerationStatus.ACCEPTED, LocalDateTime.now(), query, pageable);
+			page = postRepository
+					.search(true, ModerationStatus.ACCEPTED, LocalDateTime.now(ZoneId.of("UTC")),
+							query, pageable);
 		}
 
-		return postPageToPostPageDTO(page);
+		return mappingPostPageToPostPageDTO(page);
 	}
 
 	public PostPageDTO getPostsPageByDate(int offset, int limit, LocalDate date) {
@@ -123,9 +124,11 @@ public class PostService {
 		LocalDateTime from = date.atTime(LocalTime.MIN);
 		LocalDateTime to = date.atTime(LocalTime.MAX);
 
-		Page<Post> page = postRepository.findAllByDate(true, ModerationStatus.ACCEPTED, LocalDateTime.now(), from, to, pageable);
+		Page<Post> page = postRepository
+				.findAllByDate(true, ModerationStatus.ACCEPTED, LocalDateTime.now(ZoneId.of("UTC")),
+						from, to, pageable);
 
-		return postPageToPostPageDTO(page);
+		return mappingPostPageToPostPageDTO(page);
 	}
 
 	public PostPageDTO getPostsPageByTag(int offset, int limit, String tag) {
@@ -133,9 +136,11 @@ public class PostService {
 		Pageable pageable = PageRequest.of(pageNumber, limit);
 
 		int tagId = tagService.getIdByName(tag);
-		Page<Post> page = postRepository.findAllByTag(true, ModerationStatus.ACCEPTED, LocalDateTime.now(), tagId, pageable);
+		Page<Post> page = postRepository
+				.findAllByTag(true, ModerationStatus.ACCEPTED, LocalDateTime.now(ZoneId.of("UTC")),
+						tagId, pageable);
 
-		return postPageToPostPageDTO(page);
+		return mappingPostPageToPostPageDTO(page);
 	}
 
 	public PostPageDTO myPosts(int offset, int limit, String status, Principal principal) {
@@ -161,10 +166,10 @@ public class PostService {
 			default: return new PostPageDTO();
 		}
 
-		return postPageToPostPageDTO(postPage);
+		return mappingPostPageToPostPageDTO(postPage);
 	}
 
-	public PostPageDTO postsForModeration(int offset, int limit, String status, Principal principal) {
+	public PostPageDTO getPostsForModeration(int offset, int limit, String status, Principal principal) {
 		User moderator = userService.getUser(principal);
 		Page<Post> postPage;
 		Sort sort = Sort.by("postTime").descending();
@@ -183,7 +188,7 @@ public class PostService {
 				break;
 			default: return new PostPageDTO();
 		}
-		return postPageToPostPageDTO(postPage);
+		return mappingPostPageToPostPageDTO(postPage);
 	}
 
 	public PostDTO getPostById(int id, Principal principal) {
@@ -202,7 +207,7 @@ public class PostService {
 			post.setViewCount(post.getViewCount() + 1);
 			postRepository.save(post);
 		}
-		return postToPostDTO(post);
+		return mappingPostToPostDTO(post);
 	}
 
 	public ResultDTO postPost(PostRequest postRequest, Principal principal) {
@@ -213,7 +218,7 @@ public class PostService {
 			return new ResultDTO(false, errors);
 		} else {
 			Post post = new Post();
-			return postPostRequest(postRequest, user, post, ModerationStatus.NEW );
+			return postPostRequest(postRequest, user, post, ModerationStatus.NEW);
 		}
 	}
 
@@ -254,7 +259,7 @@ public class PostService {
 		} else {
 			Vote vote = new Vote();
 			vote.setPostId(post);
-			vote.setTime(LocalDateTime.now());
+			vote.setTime(LocalDateTime.now(ZoneId.of("UTC")));
 			vote.setUserId(user);
 			vote.setValue((byte) value);
 			voteService.save(vote);
@@ -294,7 +299,7 @@ public class PostService {
 	public CalendarDTO getCalendar(Integer year) {
 		//if request param "year" is empty, get calendar for current year
 		if (year == null) {
-			year = LocalDate.now().getYear();
+			year = LocalDate.now(ZoneId.of("UTC")).getYear();
 		}
 
 		//init set and map for response entity
@@ -303,7 +308,8 @@ public class PostService {
 
 		//fill set and map
 		for (Post post : postRepository
-				.findAllByStatusAndIsActiveBefore(ModerationStatus.ACCEPTED, true, LocalDateTime.now())) {
+				.findAllByStatusAndIsActiveBefore(ModerationStatus.ACCEPTED, true,
+						LocalDateTime.now(ZoneId.of("UTC")))) {
 			LocalDateTime postTime = post.getPostTime();
 			//add year to yearsSet
 			years.add(postTime.getYear());
@@ -350,7 +356,7 @@ public class PostService {
 	}
 
 	private LocalDateTime longToLocalDateTime(long sec) {
-		return LocalDateTime.ofEpochSecond(sec, 0, ZoneOffset.UTC);
+		return LocalDateTime.ofInstant(Instant.ofEpochSecond(sec), ZoneId.of("UTC"));
 	}
 
 	private UserForPostDTO userToUserForPostDTO(User user) {
@@ -358,7 +364,7 @@ public class PostService {
 	}
 
 	private String getAnnounceFromText(String text) {
-		String clearText = text.replaceAll("(<\\S+>)", "");
+		String clearText = text.replaceAll("(<\\S+>)", "").replaceAll("&nbsp;", " ");
 		int length = Math.min(clearText.length(), announceLength);
 		String announce = clearText.substring(0, length);
 		if (length < clearText.length()) {
@@ -367,10 +373,10 @@ public class PostService {
 		return announce;
 	}
 
-	private PostPageDTO postPageToPostPageDTO(Page<Post> postPage) {
+	private PostPageDTO mappingPostPageToPostPageDTO(Page<Post> postPage) {
 		List<PostDTO> postDTOList = new ArrayList<>();
 		postPage.getContent().forEach(post -> {
-			PostDTO postDTO = postToPostDTO(post);
+			PostDTO postDTO = mappingPostToPostDTO(post);
 			// Transform postDTO format for postDTOPage
 			postDTO.setAnnounce(getAnnounceFromText(post.getText()));
 			postDTO.setText(null);
@@ -384,7 +390,7 @@ public class PostService {
 		return new PostPageDTO(count, postDTOList);
 	}
 
-	private PostDTO postToPostDTO(Post post) {
+	private PostDTO mappingPostToPostDTO(Post post) {
 		return new PostDTO(
 				post.getId(),
 				Timestamp.valueOf(post.getPostTime()).getTime() / 1000,
@@ -397,12 +403,12 @@ public class PostService {
 				postRepository.dislikesCountOnPost(post),
 				null,
 				post.getViewCount(),
-				listCommentToListCommentDTO(commentRepository.findAllByPostId(post.getId())),
+				mappingListCommentToListCommentDTO(commentRepository.findAllByPostId(post.getId())),
 				tagService.findTagsForPost(post.getId())
 		);
 	}
 
-	private List<CommentDTO> listCommentToListCommentDTO(List<Comment> commentList) {
+	private List<CommentDTO> mappingListCommentToListCommentDTO(List<Comment> commentList) {
 		List<CommentDTO> commentDTOList = new ArrayList<>();
 		commentList.forEach(comment -> {
 			User user =

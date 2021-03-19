@@ -78,7 +78,7 @@ public class ApiPostController {
 			@RequestParam(name = "status") String status,
 			Principal principal
 	) {
-		return ResponseEntity.ok(postService.postsForModeration(offset, limit, status, principal));
+		return ResponseEntity.ok(postService.getPostsForModeration(offset, limit, status, principal));
 	}
 
 	@GetMapping("/{ID}")

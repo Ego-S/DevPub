@@ -2,19 +2,17 @@ package com.devpub.application.service;
 
 import com.devpub.application.dto.exception.BadRequestException;
 import com.devpub.application.dto.request.CommentRequest;
-import com.devpub.application.dto.response.CommentDTO;
 import com.devpub.application.dto.response.CommentResponse;
-import com.devpub.application.dto.response.ResultDTO;
 import com.devpub.application.model.Comment;
 import com.devpub.application.model.User;
 import com.devpub.application.repository.CommentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,7 +53,8 @@ public class CommentService {
 		Map<String, String> errors = checkErrors(commentRequest);
 
 		if (errors.size() == 0) {
-			Comment comment = commentRequestToComment(commentRequest, user, new Comment(), LocalDateTime.now());
+			Comment comment =
+					mappingCommentRequestToComment(commentRequest, user, new Comment(), LocalDateTime.now(ZoneId.of("UTC")));
 			commentRepository.save(comment);
 			return new CommentResponse(comment.getId(), null, null);
 		} else {
@@ -65,10 +64,10 @@ public class CommentService {
 
 	//Private methods=============================================================
 
-	private Comment commentRequestToComment(CommentRequest commentRequest,
-											User user,
-											Comment comment,
-											LocalDateTime time) {
+	private Comment mappingCommentRequestToComment(CommentRequest commentRequest,
+												   User user,
+												   Comment comment,
+												   LocalDateTime time) {
 		comment.setParentId(commentRequest.getParentId());
 		comment.setPostId(commentRequest.getPostId());
 		comment.setUserId(user.getId());

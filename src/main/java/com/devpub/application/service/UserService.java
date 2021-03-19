@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -118,7 +119,7 @@ public class UserService {
 			user.setName(registrationBody.getName());
 			user.setPassword(passwordEncoder.encode(registrationBody.getPassword()));
 			user.setEmail(registrationBody.getEmail());
-			user.setRegistrationTime(LocalDateTime.now());
+			user.setRegistrationTime(LocalDateTime.now(ZoneId.of("UTC")));
 			userRepository.save(user);
 			return new ResultDTO(true, null);
 		} else {

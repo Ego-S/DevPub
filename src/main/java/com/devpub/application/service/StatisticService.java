@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Service
 public class StatisticService {
@@ -58,7 +59,7 @@ public class StatisticService {
 		long likesCount = voteRepository.countWhereValue((byte) 1);
 		long dislikeCount = voteRepository.countWhereValue((byte) -1);
 		long viewCount = 0;
-		LocalDateTime firstPostPostTime = LocalDateTime.now();
+		LocalDateTime firstPostPostTime = LocalDateTime.now(ZoneId.of("UTC"));
 
 
 		for (Post post : postRepository.findAll()) {
@@ -86,7 +87,7 @@ public class StatisticService {
 		long likesCount = voteRepository.countWhereValueAndUser((byte) 1, user);
 		long dislikeCount = voteRepository.countWhereValueAndUser((byte) -1, user);
 		long viewCount = 0;
-		LocalDateTime firstPostPostTime = LocalDateTime.now();
+		LocalDateTime firstPostPostTime = LocalDateTime.now(ZoneId.of("UTC"));
 
 		for (Post post : postRepository.findAllByUser(user)) {
 			postCount++;
