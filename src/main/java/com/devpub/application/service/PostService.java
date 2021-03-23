@@ -37,6 +37,7 @@ public class PostService {
 	private final CommentRepository commentRepository;
 
 	private final VoteService voteService;
+	private final SettingsService settingsService;
 	private final TagService tagService;
 
 	@Value("${announceLength}")
@@ -55,11 +56,13 @@ public class PostService {
 			UserService userService,
 			CommentRepository commentRepository,
 			VoteService voteService,
+			SettingsService settingsService,
 			TagService tagService) {
 		this.postRepository = postRepository;
 		this.commentRepository = commentRepository;
 		this.tagService = tagService;
 		this.voteService = voteService;
+		this.settingsService = settingsService;
 		this.userService = userService;
 	}
 
@@ -218,7 +221,8 @@ public class PostService {
 			return new ResultDTO(false, errors);
 		} else {
 			Post post = new Post();
-			return postPostRequest(postRequest, user, post, ModerationStatus.NEW);
+			ModerationStatus status = settingsService.getStatusForNewPost();
+			return postPostRequest(postRequest, user, post, status);
 		}
 	}
 

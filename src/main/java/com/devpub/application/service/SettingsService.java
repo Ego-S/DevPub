@@ -4,6 +4,7 @@ import com.devpub.application.dto.response.ResultDTO;
 import com.devpub.application.dto.response.SettingsDTO;
 import com.devpub.application.enums.GlobalSettingCode;
 import com.devpub.application.enums.GlobalSettingValue;
+import com.devpub.application.enums.ModerationStatus;
 import com.devpub.application.model.GlobalSetting;
 import com.devpub.application.repository.SettingsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,5 +60,11 @@ public class SettingsService {
 		settingsRepository.save(statisticIsPublic);
 
 		return new ResultDTO(true, null);
+	}
+
+	public ModerationStatus getStatusForNewPost() {
+		GlobalSetting postPreModeration = settingsRepository.findByCode(GlobalSettingCode.POST_PREMODERATION);
+		return postPreModeration.getValue().equals(GlobalSettingValue.YES) ?
+				ModerationStatus.NEW : ModerationStatus.ACCEPTED;
 	}
 }
