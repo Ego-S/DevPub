@@ -10,7 +10,7 @@
                    http://www.liquibase.org/xml/ns/dbchangelog
                    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
     <changeSet author="Ego-S" id="1610735896800-0">
-        <sql>ALTER SCHEMA `pubdev` DEFAULT CHARACTER SET utf8;
+        <sql>ALTER SCHEMA `heroku_d05cfc4bd800064` DEFAULT CHARACTER SET utf8;
         </sql>
     </changeSet>
     <changeSet author="Ego-S" id="1610735896800-1">
