@@ -53,8 +53,8 @@ public class CommentService {
 		Map<String, String> errors = checkErrors(commentRequest);
 
 		if (errors.size() == 0) {
-			Comment comment =
-					mappingCommentRequestToComment(commentRequest, user, new Comment(), LocalDateTime.now(ZoneId.of("UTC")));
+			Comment comment = mappingCommentRequestToComment(
+							commentRequest, user, new Comment(), LocalDateTime.now(ZoneId.systemDefault()));
 			commentRepository.save(comment);
 			return new CommentResponse(comment.getId(), null, null);
 		} else {

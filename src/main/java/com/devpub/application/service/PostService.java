@@ -80,7 +80,7 @@ public class PostService {
 			case "best" :
 				pageable = PageRequest.of(page, limit);
 				postPage = postRepository.findAllBestAcceptedPostsBefore(true, ModerationStatus.ACCEPTED.toString(),
-						LocalDateTime.now(ZoneId.of("UTC")) ,pageable);
+						LocalDateTime.now() ,pageable);
 				return mappingPostPageToPostPageDTO(postPage);
 			case "popular" :
 				sort = JpaSort.unsafe(Sort.Direction.DESC, "size(p.comments)");
@@ -94,7 +94,7 @@ public class PostService {
 		}
 		pageable = PageRequest.of(page, limit, sort);
 		postPage = postRepository
-				.findAll(true, ModerationStatus.ACCEPTED, LocalDateTime.now(ZoneId.of("UTC")) ,pageable);
+				.findAll(true, ModerationStatus.ACCEPTED, LocalDateTime.now() ,pageable);
 
 		return mappingPostPageToPostPageDTO(postPage);
 	}
@@ -356,7 +356,7 @@ public class PostService {
 	}
 
 	private LocalDateTime longToLocalDateTime(long sec) {
-		return LocalDateTime.ofInstant(Instant.ofEpochSecond(sec), ZoneId.of("UTC"));
+		return LocalDateTime.ofInstant(Instant.ofEpochSecond(sec), ZoneId.systemDefault());
 	}
 
 	private UserForPostDTO userToUserForPostDTO(User user) {
@@ -394,6 +394,7 @@ public class PostService {
 		return new PostDTO(
 				post.getId(),
 				Timestamp.valueOf(post.getPostTime()).getTime() / 1000,
+//				post.getPostTime().toEpochSecond(ZoneOffset.UTC),
 				post.isActive() && post.getModerationStatus().equals(ModerationStatus.ACCEPTED),
 				userToUserForPostDTO(post.getUser()),
 				post.getTitle(),
@@ -417,7 +418,7 @@ public class PostService {
 									+ comment.getId()));
 			CommentDTO commentDTO = new CommentDTO(
 					comment.getId(),
-					Timestamp.valueOf(comment.getTime()).getTime() / 1000,
+					comment.getTime().toEpochSecond(ZoneOffset.UTC),
 					comment.getText(),
 					new UserForCommentDTO(
 							user.getId(),
