@@ -204,12 +204,14 @@ public class UserService {
 			Principal principal
 	) {
 		Map<String, String> errors = new HashMap<>();
+		System.out.println("get user");
 		com.devpub.application.model.User user = getUser(principal);
 
 		//change name
 		user.setName(name);
 
 		//change email if it differs from authorized users email
+		System.out.println("change email");
 		if (!user.getEmail().toLowerCase().equals(email.toLowerCase())) {
 			if (userRepository.findByEmail(email).isPresent()) {
 				errors.put("email", USER_ALREADY_EXIST_ERROR);
@@ -219,6 +221,7 @@ public class UserService {
 		}
 
 		//change password if we have to
+		System.out.println("change password");
 		if (password != null) {
 			if (isPasswordValid(password)) {
 				user.setPassword(passwordEncoder.encode(password));
@@ -228,6 +231,7 @@ public class UserService {
 		}
 
 		//save photo
+		System.out.println("save photo");
 		if (photo != null) {
 			Map<String, String> photoErrors = uploadService.checkErrors(photo);
 			if (!photoErrors.isEmpty()) {
@@ -241,12 +245,14 @@ public class UserService {
 		}
 
 		//remove photo
+		System.out.println("delete photo");
 		if (removePhoto != null && removePhoto) {
 			uploadService.deleteFile(user.getPhotoPath());
 			user.setPhotoPath("");
 		}
 
 		//build method response
+		System.out.println("response");
 		if (errors.isEmpty()) {
 			userRepository.save(user);
 			return new ResultDTO(true, null);

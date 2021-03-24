@@ -13,6 +13,7 @@ import com.devpub.application.model.Vote;
 import com.devpub.application.repository.CommentRepository;
 import com.devpub.application.repository.PostRepository;
 import lombok.Data;
+import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -236,7 +237,7 @@ public class PostService {
 			Post post = postRepository.getOne(id);
 			ModerationStatus postStatus = post.getModerationStatus();
 			if (!user.isModerator()) {
-				postStatus = ModerationStatus.NEW;
+				postStatus = settingsService.getStatusForNewPost();
 			}
 			return postPostRequest(postRequest, user, post, postStatus);
 		}
@@ -313,7 +314,7 @@ public class PostService {
 		//fill set and map
 		for (Post post : postRepository
 				.findAllByStatusAndIsActiveBefore(ModerationStatus.ACCEPTED, true,
-						LocalDateTime.now(ZoneId.of("UTC")))) {
+						LocalDateTime.now())) {
 			LocalDateTime postTime = post.getPostTime();
 			//add year to yearsSet
 			years.add(postTime.getYear());
@@ -368,13 +369,10 @@ public class PostService {
 	}
 
 	private String getAnnounceFromText(String text) {
-		String clearText = text.replaceAll("(<\\S+>)", "").replaceAll("&nbsp;", " ");
-		int length = Math.min(clearText.length(), announceLength);
-		String announce = clearText.substring(0, length);
-		if (length < clearText.length()) {
-			announce = announce + "...";
-		}
-		return announce;
+		String announce = Jsoup.parse(text).text();
+		return (announce.length() > announceLength)
+				? announce.substring(0, announceLength - 1) + "..."
+				: announce;
 	}
 
 	private PostPageDTO mappingPostPageToPostPageDTO(Page<Post> postPage) {
@@ -398,7 +396,6 @@ public class PostService {
 		return new PostDTO(
 				post.getId(),
 				Timestamp.valueOf(post.getPostTime()).getTime() / 1000,
-//				post.getPostTime().toEpochSecond(ZoneOffset.UTC),
 				post.isActive() && post.getModerationStatus().equals(ModerationStatus.ACCEPTED),
 				userToUserForPostDTO(post.getUser()),
 				post.getTitle(),
