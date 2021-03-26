@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
 
 @RestController
@@ -123,10 +124,11 @@ public class ApiGeneralController {
 	@PreAuthorize("hasAuthority('user')")
 	public ResponseEntity<ResultDTO> profileRedactionWithoutPhoto(
 			@RequestBody ProfileRedactionRequest body,
-			Principal principal
+			Principal principal,
+			HttpServletRequest request
 	) {
 		return ResponseEntity.ok(userService.profileRedaction(
-				null, body.getName(), body.getEmail(), body.getPassword(), body.getRemovePhoto(), principal));
+				null, body.getName(), body.getEmail(), body.getPassword(), body.getRemovePhoto(), principal, request));
 	}
 
 	@PostMapping(value = "/profile/my",
@@ -138,11 +140,12 @@ public class ApiGeneralController {
 			@RequestPart(name = "name", required = false) String name,
 			@RequestPart(name = "email", required = false) String email,
 			@RequestPart(name = "password", required = false) String password,
-			Principal principal
+			Principal principal,
+			HttpServletRequest request
 	) {
 		Boolean remove = removePhoto != null ? removePhoto.equals("1") : null;
 		return ResponseEntity.ok(userService.profileRedaction(
-				photo, name, email, password, remove, principal
+				photo, name, email, password, remove, principal, request
 		));
 	}
 }

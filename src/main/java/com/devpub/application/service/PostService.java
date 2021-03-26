@@ -207,7 +207,7 @@ public class PostService {
 			user = null;
 		}
 		// Increment viewCount if we should
-		if (user == null || user != post.getUser() || !user.isModerator()) {
+		if (user == null || (user.getId() != post.getUser().getId() && !user.isModerator())) {
 			post.setViewCount(post.getViewCount() + 1);
 			postRepository.save(post);
 		}

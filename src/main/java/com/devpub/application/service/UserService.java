@@ -12,10 +12,13 @@ import com.devpub.application.repository.PostRepository;
 import com.devpub.application.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,12 +26,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -76,6 +78,7 @@ public class UserService {
 			User user = (User) authentication.getPrincipal();
 			return getLoginDTO(user.getUsername());
 		} catch (AuthenticationException ex) {
+			ex.printStackTrace();
 			return new LoginDTO(false, null);
 		}
 	}
@@ -201,27 +204,27 @@ public class UserService {
 			String email,
 			String password,
 			Boolean removePhoto,
-			Principal principal
+			Principal principal,
+			HttpServletRequest request
 	) {
 		Map<String, String> errors = new HashMap<>();
-		System.out.println("get user");
 		com.devpub.application.model.User user = getUser(principal);
 
 		//change name
 		user.setName(name);
 
 		//change email if it differs from authorized users email
-		System.out.println("change email");
+		boolean isEmailChanged = false;
 		if (!user.getEmail().toLowerCase().equals(email.toLowerCase())) {
 			if (userRepository.findByEmail(email).isPresent()) {
 				errors.put("email", USER_ALREADY_EXIST_ERROR);
 			} else {
+				isEmailChanged = true;
 				user.setEmail(email);
 			}
 		}
 
 		//change password if we have to
-		System.out.println("change password");
 		if (password != null) {
 			if (isPasswordValid(password)) {
 				user.setPassword(passwordEncoder.encode(password));
@@ -231,7 +234,6 @@ public class UserService {
 		}
 
 		//save photo
-		System.out.println("save photo");
 		if (photo != null) {
 			Map<String, String> photoErrors = uploadService.checkErrors(photo);
 			if (!photoErrors.isEmpty()) {
@@ -245,16 +247,24 @@ public class UserService {
 		}
 
 		//remove photo
-		System.out.println("delete photo");
 		if (removePhoto != null && removePhoto) {
 			uploadService.deleteFile(user.getPhotoPath());
 			user.setPhotoPath("");
 		}
 
 		//build method response
-		System.out.println("response");
 		if (errors.isEmpty()) {
 			userRepository.save(user);
+			if (isEmailChanged) {
+				Collection<GrantedAuthority> currentAuth =
+						(Collection<GrantedAuthority>) SecurityContextHolder
+								.getContext()
+								.getAuthentication()
+								.getAuthorities();
+				SecurityContextHolder
+						.getContext()
+						.setAuthentication(new UsernamePasswordAuthenticationToken(email, password, currentAuth));
+			}
 			return new ResultDTO(true, null);
 		} else {
 			return new ResultDTO(false, errors);
