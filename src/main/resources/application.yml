@@ -67,5 +67,5 @@ captchaLifeTimeInMinutes: 60
 commentMinLength: 3
 
 #
-rootPage: localhost:8080
+rootPage: ${ROOT_PAGE:localhost:8080}
 loginChangeSuffix: /login/change-password/
